@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Feld bearbeiten - CMDB{% endblock %}
+{% block content %}
+  <h1>Feld bearbeiten: {{ field.name }} ({{ config_item_type.name }})</h1>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+      {{ form.name.label }}<br>
+      {{ form.name(size=30) }}
+      {% for error in form.name.errors %}
+        <span class="field-error">{{ error }}</span><br>
+      {% endfor %}
+    </p>
+    <p>{{ form.field_type.label }}<br>{{ form.field_type() }}</p>
+    <p>{{ form.required() }} {{ form.required.label }}</p>
+    <p>
+      {{ form.options.label }}<br>
+      {{ form.options(size=50) }}
+      {% for error in form.options.errors %}
+        <span class="field-error">{{ error }}</span><br>
+      {% endfor %}
+    </p>
+    {{ form.submit() }}
+  </form>
+{% endblock %}

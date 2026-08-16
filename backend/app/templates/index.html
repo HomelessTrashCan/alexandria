@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Startseite - CMDB{% endblock %}
+{% block content %}
+  {% if current_user.is_authenticated %}
+    <h1>Willkommen, {{ current_user.first_name }}</h1>
+    <p>Die Verwaltung der Konfigurationselemente folgt in einem der nächsten Schritte.</p>
+  {% else %}
+    <h1>Konfigurationsmanagementdatenbank</h1>
+    <p>Bitte melde dich an oder registriere ein neues Konto.</p>
+  {% endif %}
+{% endblock %}

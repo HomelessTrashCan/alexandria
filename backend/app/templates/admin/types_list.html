@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}CI-Typen - Verwaltung - CMDB{% endblock %}
+{% block content %}
+  <h1>CI-Typen</h1>
+
+  {% if has_permission(current_user.role, "config_item_type.create") %}
+    <p><a href="{{ url_for('admin.new_type') }}">+ Neuer CI-Typ</a></p>
+  {% endif %}
+
+  <table>
+    <thead><tr><th>Name</th><th>Beschreibung</th><th>Felder</th><th>Objekte</th></tr></thead>
+    <tbody>
+      {% for t in types %}
+        <tr>
+          <td><a href="{{ url_for('admin.type_detail', type_id=t.id) }}">{{ t.name }}</a></td>
+          <td>{{ t.description or "-" }}</td>
+          <td>{{ t.fields | length }}</td>
+          <td>{{ t.items | length }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4">Noch keine CI-Typen vorhanden.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

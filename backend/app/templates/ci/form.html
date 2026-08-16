@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ "Bearbeiten" if is_edit else "Neu" }}: {{ config_item_type.name }} - CMDB{% endblock %}
+{% block content %}
+  <h1>{{ "Bearbeiten" if is_edit else "Neu" }}: {{ config_item_type.name }}</h1>
+
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+      {{ form.name.label }}<br>
+      {{ form.name(size=40) }}
+      {% for error in form.name.errors %}
+        <span class="field-error">{{ error }}</span><br>
+      {% endfor %}
+    </p>
+
+    {% for field in field_definitions %}
+      <p>
+        <label for="field_{{ field.id }}">{{ field.name }}{% if field.required %} *{% endif %}</label><br>
+        {% set current = field_values.get(field.id, "") %}
+        {% if field.field_type == FieldType.SELECT %}
+          <select id="field_{{ field.id }}" name="field_{{ field.id }}">
+            <option value=""></option>
+            {% for option in (field.options | from_json) %}
+              <option value="{{ option }}" {% if current == option %}selected{% endif %}>{{ option }}</option>
+            {% endfor %}
+          </select>
+        {% elif field.field_type == FieldType.BOOLEAN %}
+          <input type="checkbox" id="field_{{ field.id }}" name="field_{{ field.id }}" {% if current == "true" %}checked{% endif %}>
+        {% elif field.field_type == FieldType.DATE %}
+          <input type="date" id="field_{{ field.id }}" name="field_{{ field.id }}" value="{{ current }}">
+        {% elif field.field_type == FieldType.NUMBER %}
+          <input type="text" inputmode="decimal" id="field_{{ field.id }}" name="field_{{ field.id }}" value="{{ current }}">
+        {% else %}
+          <input type="text" id="field_{{ field.id }}" name="field_{{ field.id }}" value="{{ current }}">
+        {% endif %}
+        {% if field_errors.get(field.id) %}
+          <br><span class="field-error">{{ field_errors[field.id] }}</span>
+        {% endif %}
+      </p>
+    {% endfor %}
+
+    {{ form.submit() }}
+  </form>
+{% endblock %}

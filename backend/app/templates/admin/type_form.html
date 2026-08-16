@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ "CI-Typ bearbeiten" if is_edit else "Neuer CI-Typ" }} - CMDB{% endblock %}
+{% block content %}
+  <h1>{{ "CI-Typ bearbeiten" if is_edit else "Neuer CI-Typ" }}</h1>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+      {{ form.name.label }}<br>
+      {{ form.name(size=40) }}
+      {% for error in form.name.errors %}
+        <span class="field-error">{{ error }}</span><br>
+      {% endfor %}
+    </p>
+    <p>
+      {{ form.description.label }}<br>
+      {{ form.description(size=60) }}
+      {% for error in form.description.errors %}
+        <span class="field-error">{{ error }}</span><br>
+      {% endfor %}
+    </p>
+    {{ form.submit() }}
+  </form>
+{% endblock %}

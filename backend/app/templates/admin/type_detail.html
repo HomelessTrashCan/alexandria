@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ config_item_type.name }} - Verwaltung - CMDB{% endblock %}
+{% block content %}
+  <h1>{{ config_item_type.name }}</h1>
+  <p>{{ config_item_type.description or "" }}</p>
+
+  <p class="actions">
+    {% if has_permission(current_user.role, "config_item_type.update") %}
+      <a href="{{ url_for('admin.edit_type', type_id=config_item_type.id) }}">Bearbeiten</a>
+    {% endif %}
+    {% if has_permission(current_user.role, "config_item_type.delete") %}
+      <form method="post" action="{{ url_for('admin.delete_type', type_id=config_item_type.id) }}" class="inline-form"
+            onsubmit="return confirm('CI-Typ wirklich löschen? Das entfernt auch alle Felddefinitionen dieses Typs.');">
+        <button type="submit">Löschen</button>
+      </form>
+    {% endif %}
+  </p>
+
+  <h2>Felder</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Typ</th><th>Pflicht</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for field in config_item_type.fields %}
+        <tr>
+          <td>{{ field.name }}</td>
+          <td>{{ field.field_type }}</td>
+          <td>{{ "Ja" if field.required else "Nein" }}</td>
+          <td>{{ "Archiviert" if field.archived else "Aktiv" }}</td>
+          <td class="actions">
+            {% if has_permission(current_user.role, "field_definition.update") %}
+              <a href="{{ url_for('admin.edit_field', type_id=config_item_type.id, field_id=field.id) }}">Bearbeiten</a>
+            {% endif %}
+            {% if has_permission(current_user.role, "field_definition.archive") %}
+              <form method="post" action="{{ url_for('admin.archive_field', type_id=config_item_type.id, field_id=field.id) }}" class="inline-form">
+                <button type="submit">{{ "Reaktivieren" if field.archived else "Archivieren" }}</button>
+              </form>
+            {% endif %}
+            {% if has_permission(current_user.role, "field_definition.delete") %}
+              <form method="post" action="{{ url_for('admin.delete_field', type_id=config_item_type.id, field_id=field.id) }}" class="inline-form"
+                    onsubmit="return confirm('Feld wirklich löschen? Dabei gehen alle bisher erfassten Werte dieses Feldes über alle Objekte hinweg verloren. Alternative: Archivieren.');">
+                <button type="submit">Löschen</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5">Noch keine Felder definiert.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if has_permission(current_user.role, "field_definition.create") %}
+    <h2>Neues Feld</h2>
+    <form method="post" action="{{ url_for('admin.new_field', type_id=config_item_type.id) }}" novalidate>
+      {{ field_form.hidden_tag() }}
+      <p>
+        {{ field_form.name.label }}<br>
+        {{ field_form.name(size=30) }}
+        {% for error in field_form.name.errors %}
+          <span class="field-error">{{ error }}</span><br>
+        {% endfor %}
+      </p>
+      <p>{{ field_form.field_type.label }}<br>{{ field_form.field_type() }}</p>
+      <p>{{ field_form.required() }} {{ field_form.required.label }}</p>
+      <p>
+        {{ field_form.options.label }}<br>
+        {{ field_form.options(size=50) }}
+        {% for error in field_form.options.errors %}
+          <span class="field-error">{{ error }}</span><br>
+        {% endfor %}
+      </p>
+      {{ field_form.submit() }}
+    </form>
+  {% endif %}
+{% endblock %}

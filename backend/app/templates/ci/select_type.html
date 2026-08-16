@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Typ wählen - CMDB{% endblock %}
+{% block content %}
+  <h1>Welchen Typ möchtest du anlegen?</h1>
+  {% if types %}
+    <ul>
+      {% for t in types %}
+        <li>
+          <a href="{{ url_for('ci.new_item', type_id=t.id) }}">{{ t.name }}</a>
+          {% if t.description %} - {{ t.description }}{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Es sind noch keine CI-Typen vorhanden. Ein Administrator muss zuerst einen Typ anlegen.</p>
+  {% endif %}
+{% endblock %}

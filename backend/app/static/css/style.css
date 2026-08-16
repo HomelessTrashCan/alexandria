@@ -1,0 +1,43 @@
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  color: #1a1a1a;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.navbar nav a {
+  margin-left: 1rem;
+}
+
+main {
+  max-width: 40rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.flashes {
+  list-style: none;
+  padding: 0;
+}
+
+.flash {
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+}
+
+.flash-success { background: #e3f7e3; }
+.flash-danger { background: #fbe3e3; }
+.flash-warning { background: #fff6e0; }
+
+.field-error {
+  color: #b00020;
+  font-size: 0.875rem;
+}

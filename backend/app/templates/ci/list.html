@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Konfigurationselemente - CMDB{% endblock %}
+{% block content %}
+  <h1>Konfigurationselemente</h1>
+
+  {% if has_permission(current_user.role, "config_item.create") %}
+    <p><a href="{{ url_for('ci.choose_type') }}">+ Neues Konfigurationselement</a></p>
+  {% endif %}
+
+  <form method="get" class="filter-bar">
+    <input type="text" name="q" placeholder="Volltextsuche" value="{{ query_text }}">
+    <select name="type_id">
+      <option value="">Alle Typen</option>
+      {% for t in types %}
+        <option value="{{ t.id }}" {% if type_id == t.id %}selected{% endif %}>{{ t.name }}</option>
+      {% endfor %}
+    </select>
+    <select name="status">
+      <option value="">Alle Status</option>
+      {% for value, label in statuses %}
+        <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select name="sort">
+      <option value="name" {% if sort == "name" %}selected{% endif %}>Name</option>
+      <option value="type" {% if sort == "type" %}selected{% endif %}>Typ</option>
+      <option value="created_at" {% if sort == "created_at" %}selected{% endif %}>Neueste zuerst</option>
+    </select>
+    <button type="submit">Filtern</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Typ</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+        <tr>
+          <td><a href="{{ url_for('ci.detail', item_id=item.id) }}">{{ item.name }}</a></td>
+          <td>{{ item.config_item_type.name }}</td>
+          <td>{{ "Archiviert" if item.is_archived else "Aktiv" }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="3">Keine Konfigurationselemente gefunden.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
