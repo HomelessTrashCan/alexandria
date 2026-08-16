@@ -29,7 +29,7 @@
 
   <h2>Attribute</h2>
   {% if item.field_values %}
-    <table>
+    <table class="table">
       <tbody>
         {% for fv in item.field_values %}
           <tr><th>{{ fv.field_definition.name }}</th><td>{{ fv.value }}</td></tr>
@@ -74,7 +74,7 @@
 
   <h2>Änderungshistorie</h2>
   {% if has_permission(current_user.role, "config_item.history_read") %}
-    <table>
+    <table class="table">
       <thead><tr><th>Zeitpunkt</th><th>Aktion</th><th>Feld</th><th>Alt</th><th>Neu</th><th>Von</th></tr></thead>
       <tbody>
         {% for entry in item.change_log_entries %}

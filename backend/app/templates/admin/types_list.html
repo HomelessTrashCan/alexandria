@@ -7,7 +7,7 @@
     <p><a href="{{ url_for('admin.new_type') }}">+ Neuer CI-Typ</a></p>
   {% endif %}
 
-  <table>
+  <table class="table">
     <thead><tr><th>Name</th><th>Beschreibung</th><th>Felder</th><th>Objekte</th></tr></thead>
     <tbody>
       {% for t in types %}

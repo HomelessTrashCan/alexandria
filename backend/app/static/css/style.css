@@ -12,8 +12,15 @@ body {
   border-bottom: 1px solid #ddd;
 }
 
-.navbar nav a {
-  margin-left: 1rem;
+.navbar-start,
+.navbar-end {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.navbar-end {
+  gap: 1rem;
 }
 
 main {
@@ -40,4 +47,22 @@ main {
 .field-error {
   color: #b00020;
   font-size: 0.875rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border-color: #1a1a1a;
+  margin: 1rem 0;
+}
+
+.table th,
+.table td {
+  padding: 0.5rem 1.25rem 0.5rem 0;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.table thead th {
+  border-bottom: 2px solid #1a1a1a;
 }
