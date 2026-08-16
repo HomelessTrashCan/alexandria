@@ -1,4 +1,5 @@
 import json
+import logging
 
 from flask import Flask
 
@@ -12,6 +13,10 @@ from domain.relationship_types import RelationshipType
 def create_app(config_class: type = Config) -> Flask:
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    # Ohne dies zeigt Python INFO-Meldungen (z. B. den geloggten Bestaetigungslink
+    # in backend/app/mail.py, wenn kein SMTP konfiguriert ist) standardmaessig nicht an.
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s in %(name)s: %(message)s")
 
     db.init_app(app)
     migrate.init_app(app, db)
