@@ -1,4 +1,4 @@
-"""Benutzerrollen der CMDB, siehe docs/claude.md, Abschnitt "Rollenmanagement"."""
+"""Benutzerrollen der CMDB."""
 
 
 class Role:
@@ -15,5 +15,5 @@ class Role:
     }
 
 
-# Rolle, die ein neu registriertes Konto per Default erhält (docs/claude.md, Zeile 22).
+# Rolle, die ein neu registriertes Konto standardmässig erhält.
 DEFAULT_ROLE = Role.BENUTZER

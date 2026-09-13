@@ -1,12 +1,9 @@
 #!/usr/bin/env python
-"""Startet die CMDB im Entwicklungsmodus. Aequivalent zu 'npm run start'.
+"""Startet die CMDB im Entwicklungsmodus, äquivalent zu 'npm run start'.
 
-Nutzt bewusst nicht sys.executable, da das Skript sonst vom System-Python
-statt vom projekteigenen .venv ausgefuehrt wird, falls jemand einfach
-'python start.py' ohne aktiviertes venv aufruft.
-
-FLASK_APP/FLASK_DEBUG kommen aus .flaskenv (von der Flask-CLI automatisch
-geladen).
+Nutzt bewusst nicht sys.executable, sonst würde das Skript bei 'python
+start.py' ohne aktiviertes venv das System-Python statt des projekteigenen
+.venv verwenden.
 """
 
 import subprocess

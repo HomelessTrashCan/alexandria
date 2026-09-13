@@ -1,15 +1,7 @@
-"""CSV- und PDF-Export von Konfigurationselementen (docs/toDo.md).
+"""CSV- und PDF-Export von Konfigurationselementen.
 
-Exportiert wird bewusst dieselbe Ergebnismenge, die auch die Liste im Web-UI
-gerade anzeigt (inkl. aktueller Such-/Filterparameter) - siehe die Routen in
-backend/app/blueprints/ci/routes.py, die dieselbe search_config_items()-Abfrage
-verwenden wie ci.list_items.
-
-Beide Formate nutzen dieselben Spalten. Da unterschiedliche CI-Typen
-unterschiedliche Felder haben, werden die dynamischen Attribute nicht als
-eigene Spalten abgebildet (das wuerde bei gemischten Typen entweder sehr viele
-leere Zellen oder eine variable Spaltenzahl bedeuten), sondern als ein
-"Attribute"-Text pro Zeile ("Feldname: Wert; ...").
+Dynamische Attribute unterscheiden sich je CI-Typ, deshalb landen sie nicht
+in eigenen Spalten, sondern als ein Text pro Zeile ("Feldname: Wert; ...").
 """
 
 import csv
@@ -42,15 +34,12 @@ def _row_for(item) -> list[str]:
 
 def build_csv(items) -> bytes:
     buffer = io.StringIO()
-    # Semikolon statt Komma: Excel in deutscher Spracheinstellung trennt eine
-    # mit Komma getrennte .csv beim Doeffnen sonst nicht in Spalten auf.
+    # Semikolon statt Komma: Excel (DE) trennt sonst beim Öffnen nicht in Spalten.
     writer = csv.writer(buffer, delimiter=";")
     writer.writerow(COLUMNS)
     for item in items:
         writer.writerow(_row_for(item))
-    # utf-8-sig setzt eine BOM an den Anfang, damit Excel Umlaute korrekt als
-    # UTF-8 erkennt statt sie als falsche Zeichen darzustellen.
-    return buffer.getvalue().encode("utf-8-sig")
+    return buffer.getvalue().encode("utf-8-sig")  # BOM, damit Excel Umlaute korrekt erkennt
 
 
 def build_pdf(items) -> bytes:

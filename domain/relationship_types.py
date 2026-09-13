@@ -1,8 +1,4 @@
-"""Beziehungstypen zwischen Konfigurationselementen, siehe docs/claude.md, Zeile 12.
-
-Beziehungen sind gerichtet (source -> target), damit sich Abhaengigkeiten und
-Auswirkungen (Impact-Analyse) nachvollziehen lassen.
-"""
+"""Beziehungstypen zwischen Konfigurationselementen. Gerichtet (source -> target), damit sich Abhängigkeiten nachvollziehen lassen."""
 
 
 class RelationshipType:

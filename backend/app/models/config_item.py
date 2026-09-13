@@ -11,14 +11,10 @@ class ConfigItem(db.Model):
     config_item_type_id = db.Column(db.Integer, db.ForeignKey("config_item_types.id"), nullable=False)
     name = db.Column(db.String(128), nullable=False)
     status = db.Column(db.String(16), nullable=False, default=ConfigItemStatus.ACTIVE)
-    # Optimistisches Sperren (docs/claude.md, Zeile 27): wird bei jeder Aenderung
-    # hochgezaehlt und beim Speichern eines Bearbeiten-Formulars mit der beim
-    # Oeffnen des Formulars mitgegebenen Version verglichen (siehe
-    # backend/app/services/config_items.py). Bewusst kein SQLAlchemy
-    # version_id_col: das schuetzt nur ein bereits im Speicher gehaltenes
-    # Objekt innerhalb derselben Session/Transaktion, nicht aber den Fall
-    # "Benutzer A oeffnet das Formular, Benutzer B speichert zuerst" - genau
-    # dieser Fall ist hier das eigentliche Szenario.
+    # Optimistisches Sperren: wird bei jeder Änderung hochgezählt und beim
+    # Speichern mit der beim Öffnen des Formulars mitgegebenen Version
+    # verglichen. Bewusst kein SQLAlchemy version_id_col - das schützt nur
+    # innerhalb derselben Session, nicht über zwei getrennte Requests hinweg.
     version = db.Column(db.Integer, nullable=False, default=1)
     created_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))

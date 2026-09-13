@@ -7,7 +7,7 @@ from domain.permissions import has_permission
 
 
 def permission_required(action: str):
-    """Route-Decorator: erfordert Login und die angegebene Berechtigung (siehe domain/permissions.py)."""
+    """Route-Decorator: erfordert Login und die angegebene Berechtigung."""
 
     def decorator(view):
         @wraps(view)

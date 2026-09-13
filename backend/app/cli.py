@@ -10,11 +10,7 @@ from domain.roles import Role
 def register_cli(app: Flask) -> None:
     @app.cli.command("seed-demo")
     def seed_demo() -> None:
-        """Legt ein Demo-Admin-Konto und einen Beispiel-CI-Typ an (idempotent).
-
-        Nuetzlich, solange es noch keine Admin-Oberflaeche fuer Typen/Felder
-        und Benutzerverwaltung gibt.
-        """
+        """Legt ein Demo-Admin-Konto und einen Beispiel-CI-Typ an (idempotent), praktisch für einen schnellen Ausgangszustand nach einer leeren Datenbank."""
         admin = User.query.filter_by(username="admin").first()
         if admin is None:
             admin = User(

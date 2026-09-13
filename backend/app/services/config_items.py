@@ -12,29 +12,15 @@ from domain.relationship_types import RelationshipType
 
 
 class ConcurrentModificationError(Exception):
-    """Wird ausgeloest, wenn ein Konfigurationselement seit dem Oeffnen des
-    Bearbeiten-Formulars von jemand anderem veraendert wurde (optimistisches
-    Sperren, docs/claude.md Zeile 27)."""
+    """Ausgelöst, wenn das Konfigurationselement seit dem Öffnen des Formulars von jemand anderem geändert wurde."""
 
 
 class DuplicateRelationshipError(Exception):
-    """Wird ausgeloest, wenn dieselbe Beziehung (Quelle, Ziel, Typ) bereits
-    existiert - z. B. weil zwei Browserfenster gleichzeitig dieselbe
-    Verknuepfung anlegen. Die DB-Unique-Constraint (uq_relationship_source_target_type)
-    verhindert das Duplikat bereits zuverlaessig; hier wird der resultierende
-    IntegrityError nur noch in eine verstaendliche Meldung uebersetzt."""
+    """Ausgelöst, wenn dieselbe Beziehung (Quelle, Ziel, Typ) schon existiert."""
 
 
 class SelfReferenceError(Exception):
-    """Wird ausgeloest, wenn ein Konfigurationselement mit sich selbst
-    verknuepft werden soll. Ueber die Web-Oberflaeche nicht erreichbar (das
-    Ziel-Dropdown schliesst das Objekt selbst aus), aber ein direkter
-    POST-Request koennte es umgehen - die DB-CHECK-Constraint
-    (ck_relationship_no_self_reference) wuerde das ohnehin verhindern, dabei
-    aber einen OperationalError werfen (MariaDB meldet CHECK-Verletzungen
-    anders als UNIQUE-Verletzungen). Die Vorabpruefung hier vermeidet den
-    unnoetigen DB-Rundgang und liefert eine praezise Meldung statt einer
-    generischen "existiert bereits"-Meldung."""
+    """Ausgelöst, wenn ein Konfigurationselement mit sich selbst verknüpft werden soll."""
 
 
 def validate_field_values(field_definitions: list[FieldDefinition], form_data) -> tuple[dict[int, str], dict[int, str]]:
@@ -86,7 +72,7 @@ def create_config_item(config_item_type, name: str, field_definitions, form_data
 
     item = ConfigItem(config_item_type_id=config_item_type.id, name=name, created_by_id=user.id)
     db.session.add(item)
-    db.session.flush()  # vergibt item.id fuer die Feldwerte/den Log-Eintrag
+    db.session.flush()  # item.id wird für Feldwerte und Log-Eintrag benötigt
 
     for field in field_definitions:
         value = values.get(field.id)
@@ -99,15 +85,7 @@ def create_config_item(config_item_type, name: str, field_definitions, form_data
 
 
 def update_config_item(item: ConfigItem, name: str, field_definitions, form_data, user, expected_version: int) -> None:
-    """Aktualisiert ein Konfigurationselement, sofern es seit dem Laden des
-    Formulars nicht von jemand anderem geaendert wurde.
-
-    expected_version stammt aus einem versteckten Formularfeld, das beim
-    Rendern des Bearbeiten-Formulars mit dem damaligen item.version gefuellt
-    wurde. Weicht es vom aktuellen Stand in der DB ab, hat zwischenzeitlich
-    jemand anderes gespeichert - dann wird nichts uebernommen, sondern ein
-    ConcurrentModificationError ausgeloest (siehe backend/app/blueprints/ci/routes.py).
-    """
+    """Aktualisiert das Konfigurationselement, sofern es seit dem Laden des Formulars nicht von jemand anderem geändert wurde (optimistisches Sperren über expected_version)."""
     if item.version != expected_version:
         raise ConcurrentModificationError(
             f'"{item.name}" wurde zwischenzeitlich von einer anderen Person geändert. '
@@ -182,10 +160,7 @@ def add_relationship(source: ConfigItem, target: ConfigItem, relationship_type: 
     try:
         db.session.commit()
     except (IntegrityError, OperationalError):
-        # IntegrityError: Duplikat (uq_relationship_source_target_type).
-        # OperationalError: MariaDB meldet CHECK-Constraint-Verletzungen so,
-        # nicht als IntegrityError - als Netz falls die obige Vorabpruefung
-        # umgangen wird (z. B. durch kuenftigen Code, der sie vergisst).
+        # IntegrityError = Duplikat, OperationalError = MariaDB meldet CHECK-Verletzungen so statt als IntegrityError.
         db.session.rollback()
         label = RelationshipType.LABELS.get(relationship_type, relationship_type)
         raise DuplicateRelationshipError(f'Die Beziehung "{label}" zu "{target.name}" existiert bereits.') from None

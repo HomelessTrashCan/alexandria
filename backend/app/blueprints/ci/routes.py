@@ -12,7 +12,7 @@ from domain.ci_status import ConfigItemStatus
 
 
 def _parse_list_filters() -> dict:
-    """Liest die Such-/Filterparameter aus der Query-String - gemeinsam genutzt von list_items und den Export-Routen, damit ein Export immer exakt die aktuell angezeigte/gefilterte Liste widerspiegelt."""
+    """Liest die Such-/Filterparameter aus der Query-String, genutzt von list_items und den Export-Routen."""
     return {
         "query_text": request.args.get("q") or None,
         "type_id": request.args.get("type_id", type=int),
@@ -161,7 +161,7 @@ def archive_item(item_id: int):
 
 
 @ci_bp.route("/<int:item_id>/unarchive", methods=["POST"])
-@permission_required("config_item.delete")  # Reaktivieren ist in der RBAC-Matrix nicht separat geregelt; an "loeschen" (Admin) angelehnt.
+@permission_required("config_item.delete")  # kein eigenes Recht für Reaktivieren, an "löschen" (Admin) angelehnt
 def unarchive_item(item_id: int):
     item = ConfigItem.query.get_or_404(item_id)
     ci_service.set_archived(item, archived=False, user=current_user)
@@ -174,7 +174,7 @@ def unarchive_item(item_id: int):
 def delete_item(item_id: int):
     item = db.session.get(ConfigItem, item_id)
     if item is None:
-        # Bereits geloescht (z. B. zeitgleich in einem anderen Fenster) - idempotent behandeln, kein 404 (siehe docs/toDo.md).
+        # Schon gelöscht (z. B. in einem anderen Fenster) - idempotent, kein 404.
         flash("Konfigurationselement war bereits gelöscht.", "info")
         return redirect(url_for("ci.list_items"))
 
@@ -212,10 +212,7 @@ def add_relationship(item_id: int):
 def delete_relationship(item_id: int, relationship_id: int):
     relationship = db.session.get(ConfigItemRelationship, relationship_id)
     if relationship is None or relationship.source_id != item_id:
-        # Bereits entfernt - z. B. weil ein anderes Browserfenster dieselbe
-        # Aktion schon ausgefuehrt hat. Loeschen wird idempotent behandelt:
-        # der gewuenschte Endzustand (Beziehung existiert nicht mehr) ist
-        # bereits erreicht, das ist kein Fehler und kein 404.
+        # Schon entfernt - der gewünschte Endzustand ist bereits erreicht, kein Fehler.
         flash("Beziehung war bereits entfernt.", "info")
         return redirect(url_for("ci.detail", item_id=item_id))
 

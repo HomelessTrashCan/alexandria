@@ -17,8 +17,7 @@ def create_app(config_class: type = Config) -> Flask:
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # Ohne dies zeigt Python INFO-Meldungen (z. B. von Werkzeug oder kuenftigen
-    # logger.info-Aufrufen) standardmaessig nicht an.
+    # Ohne dies bleiben INFO-Logs (z. B. von Werkzeug) unsichtbar.
     logging.basicConfig(level=logging.INFO, format="%(levelname)s in %(name)s: %(message)s")
 
     db.init_app(app)
@@ -36,10 +35,8 @@ def create_app(config_class: type = Config) -> Flask:
     @login_manager.user_loader
     def load_user(user_id: str):
         user = db.session.get(User, int(user_id))
-        # Gibt None zurueck statt des deaktivierten Kontos: Flask-Login
-        # behandelt das wie "nicht angemeldet". Das beendet eine bereits
-        # laufende Session sofort beim naechsten Request, sobald ein Admin
-        # das Konto deaktiviert - nicht erst bei der naechsten Anmeldung.
+        # None statt des deaktivierten Kontos: Flask-Login behandelt das als
+        # nicht angemeldet und beendet eine laufende Session sofort.
         if user is not None and not user.active:
             return None
         return user
@@ -56,9 +53,7 @@ def create_app(config_class: type = Config) -> Flask:
     app.register_blueprint(api_bp)
     app.register_blueprint(admin_bp)
 
-    # Fuer Templates: Rechte-Checks und Enum-Konstanten direkt verfuegbar machen,
-    # damit UI-Elemente (Buttons, dynamische Formularfelder) ohne Umweg pruefbar sind.
-    # Die eigentliche Durchsetzung der Rechte bleibt Sache der Routen (@permission_required).
+    # Rechte-Checks und Enums direkt in Templates verfügbar machen (die Durchsetzung selbst bleibt Sache von @permission_required).
     app.jinja_env.globals["has_permission"] = has_permission
     app.jinja_env.globals["FieldType"] = FieldType
     app.jinja_env.globals["RelationshipType"] = RelationshipType
@@ -68,13 +63,7 @@ def create_app(config_class: type = Config) -> Flask:
 
     @app.errorhandler(OperationalError)
     def handle_database_unavailable(error):
-        """Faengt DB-Verbindungsfehler ab (Server down, Netzwerkausfall, o.ae.),
-        damit Benutzer eine verstaendliche Meldung statt eines rohen 500ers/
-        Stacktrace sehen. Bewusst nur OperationalError (Verbindungs-/Betriebs-
-        fehler), nicht z. B. IntegrityError - ein fehlgeschlagener Unique-
-        Constraint ist ein Anwendungsfall, kein Infrastrukturausfall, und soll
-        weiterhin dort behandelt werden, wo er auftritt.
-        """
+        """Fängt DB-Verbindungsfehler ab, statt einen rohen 500er zu zeigen. Bewusst nicht IntegrityError - das ist ein Anwendungsfall, kein Infrastrukturausfall."""
         app.logger.error("Datenbank nicht erreichbar: %s", error)
         if request.blueprint == "api":
             return jsonify(error="Die Datenbank ist aktuell nicht erreichbar. Bitte später erneut versuchen."), 503

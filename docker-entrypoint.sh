@@ -1,23 +1,11 @@
 #!/bin/sh
-# Wird als ENTRYPOINT ausgefuehrt, bevor CMD (gunicorn) startet.
-#
-# "flask db upgrade" wendet beim Containerstart automatisch alle noch
-# ausstehenden Alembic-Migrationen an, damit ein Deploy nicht zusaetzlich
-# einen manuellen Migrationsschritt braucht. Bei genau einer laufenden Instanz
-# (wie in diesem Projekt) unproblematisch; bei mehreren gleichzeitig
-# startenden Instanzen koennten zwei "upgrade"-Laeufe theoretisch
-# kollidieren - fuer den Umfang dieser Praxisarbeit (Einzelinstanz) ist das
-# kein relevantes Szenario.
+# Wendet vor dem Start (CMD, meist gunicorn) automatisch ausstehende Migrationen an.
 set -e
 
-# Wiederholt "flask db upgrade" ein paar Mal, statt bei einem einzigen
-# fehlgeschlagenen Versuch sofort aufzugeben: der Compose-Healthcheck der DB
-# bestaetigt zwar, dass MariaDB innerhalb ihres eigenen Containers auf einen
-# lokalen Ping antwortet, aber das Docker-Netzwerk zwischen den Containern
-# kann im allerersten Moment nach dem Start noch minimal hinterherhinken
-# (insbesondere unter Docker Desktop auf Windows) - ohne diese Wiederholung
-# wuerde der Container abstuerzen und sich nur durch die "restart:
-# unless-stopped"-Policy in docker-compose.yml zufaellig selbst heilen.
+# Wiederholt "flask db upgrade" statt beim ersten Fehlschlag aufzugeben: der
+# DB-Healthcheck bestätigt nur, dass MariaDB innerhalb ihres eigenen Containers
+# antwortet, das Docker-Netzwerk zwischen den Containern kann kurz danach noch
+# hinterherhinken.
 attempt=1
 max_attempts=10
 until flask db upgrade; do

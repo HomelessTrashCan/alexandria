@@ -6,7 +6,7 @@
   <form method="post" novalidate>
     {{ form.hidden_tag() }}
     {% if is_edit %}
-      {# Optimistisches Sperren: Stand beim Oeffnen des Formulars, wird beim Speichern serverseitig geprueft. #}
+      {# Optimistisches Sperren: Stand beim Öffnen des Formulars, wird beim Speichern serverseitig geprüft. #}
       <input type="hidden" name="version" value="{{ version }}">
     {% endif %}
     <p>

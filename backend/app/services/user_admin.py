@@ -1,22 +1,11 @@
-"""Benutzerverwaltung fuer Administratoren: Rollen zuweisen, Konten
-(de)aktivieren (docs/toDo.md).
-"""
+"""Benutzerverwaltung für Administratoren: Rollen zuweisen, Konten (de)aktivieren."""
 
 from backend.app.extensions import db
 from backend.app.models import User
 
 
 class SelfManagementError(Exception):
-    """Eine administrierende Person darf die eigene Rolle oder den eigenen
-    Aktiv-Status nicht ueber diese Oberflaeche aendern.
-
-    Grund: der user_loader (backend/app/__init__.py) behandelt ein
-    deaktiviertes Konto sofort als abgemeldet - wuerde man sich selbst
-    deaktivieren oder die eigene Admin-Rolle entziehen, waere man noch
-    innerhalb desselben Klicks ausgesperrt und koennte den Fehler nicht
-    einmal rueckgaengig machen. Eine andere administrierende Person muss das
-    stattdessen uebernehmen.
-    """
+    """Eine administrierende Person darf die eigene Rolle oder den eigenen Aktiv-Status nicht selbst ändern - sonst könnte sie sich mit einem Klick aussperren."""
 
 
 def update_role(target_user: User, new_role: str, acting_user: User) -> None:

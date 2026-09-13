@@ -1,8 +1,4 @@
-"""Rechte-Matrix, siehe docs/claude.md, Abschnitt "Rollenmanagement".
-
-Jeder Eintrag bildet eine Zeile der dortigen RBAC-Tabelle ab. Neue Funktionen
-bekommen hier einen Eintrag, statt Rollen-Checks verstreut in Routen zu pruefen.
-"""
+"""RBAC-Rechte-Matrix: welche Rolle darf welche Aktion. Neue Funktionen bekommen hier einen Eintrag, statt Rollen-Checks über Routen zu verstreuen."""
 
 from domain.roles import Role
 
@@ -24,7 +20,6 @@ PERMISSIONS = {
     "field_definition.update": (Role.ADMIN,),
     "field_definition.archive": (Role.ADMIN,),
     "field_definition.delete": (Role.ADMIN,),
-    # Benutzerverwaltung (Rollen zuweisen, Konten deaktivieren), docs/toDo.md.
     "user.manage": (Role.ADMIN,),
 }
 

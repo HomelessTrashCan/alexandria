@@ -55,7 +55,7 @@ def edit_type(type_id: int):
 def delete_type(type_id: int):
     config_item_type = db.session.get(ConfigItemType, type_id)
     if config_item_type is None:
-        # Bereits geloescht (z. B. zeitgleich in einem anderen Fenster) - idempotent behandeln, kein 404 (siehe docs/toDo.md).
+        # Schon gelöscht (z. B. in einem anderen Fenster) - idempotent, kein 404.
         flash("CI-Typ war bereits gelöscht.", "info")
         return redirect(url_for("admin.list_types"))
 
@@ -118,11 +118,11 @@ def archive_field(type_id: int, field_id: int):
 def delete_field(type_id: int, field_id: int):
     field = db.session.get(FieldDefinition, field_id)
     if field is None:
-        # Bereits geloescht (z. B. zeitgleich in einem anderen Fenster) - idempotent behandeln, kein 404 (siehe docs/toDo.md).
+        # Schon gelöscht (z. B. in einem anderen Fenster) - idempotent, kein 404.
         flash("Feld war bereits gelöscht.", "info")
         return redirect(url_for("admin.type_detail", type_id=type_id))
     if field.config_item_type_id != type_id:
-        # Keine Race-Condition, sondern eine URL-Integritaetspruefung (Feld gehoert nicht zu diesem Typ) - bleibt ein echter 404.
+        # Keine Race Condition, sondern eine URL-Integritätsprüfung - bleibt ein echter 404.
         abort(404)
     name = field.name
     type_service.delete_field(field)

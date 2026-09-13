@@ -1,4 +1,4 @@
-"""Ereignisarten in der Änderungshistorie (Audit-Trail), siehe docs/claude.md, Zeile 11."""
+"""Ereignisarten in der Änderungshistorie (Audit-Trail)."""
 
 
 class ChangeAction:

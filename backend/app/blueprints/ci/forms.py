@@ -6,11 +6,7 @@ from domain.relationship_types import RelationshipType
 
 
 class ConfigItemNameForm(FlaskForm):
-    """Bildet nur den Namen + CSRF-Schutz ab; die dynamischen Attribute werden
-    serverseitig anhand der Felddefinitionen des jeweiligen CI-Typs geprüft
-    (siehe backend/app/services/config_items.py), da sie erst zur Laufzeit
-    bekannt sind und sich nicht als statische WTForms-Felder deklarieren lassen.
-    """
+    """Bildet nur den Namen ab - die dynamischen Attribute sind erst zur Laufzeit bekannt und lassen sich nicht als statische WTForms-Felder deklarieren, deshalb werden sie separat serverseitig geprüft."""
 
     name = StringField("Name", validators=[DataRequired(), Length(max=128)])
     submit = SubmitField("Speichern")

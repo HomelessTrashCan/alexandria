@@ -1,8 +1,6 @@
 name: Tests
 
-# Laeuft bei jedem Push und jedem Pull Request - der einzige Zweck dieser
-# Pipeline ist aktuell, die pytest-Suite (tests/) automatisch gegen eine
-# echte MariaDB laufen zu lassen, damit Regressionen sofort auffallen.
+# Läuft die pytest-Suite bei jedem Push/PR gegen eine echte MariaDB.
 on:
   push:
   pull_request:
@@ -11,11 +9,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    # Ein Service-Container, den GitHub Actions parallel zum Job startet und
-    # per Healthcheck erst freigibt, wenn MariaDB tatsaechlich bereit ist -
-    # kein manuelles "warten" noetig. Nutzername/Passwort/DB-Name entsprechen
-    # bewusst den Defaults aus backend/app/config.py (TestConfig), damit die
-    # Tests hier ohne zusaetzliche Umgebungsvariablen laufen - genau wie lokal.
+    # Nutzername/Passwort/DB-Name entsprechen den Defaults aus TestConfig, damit die Tests ohne zusätzliche Umgebungsvariablen laufen.
     services:
       mariadb:
         image: mariadb:11
@@ -41,8 +35,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Abhaengigkeiten installieren
+      - name: Abhängigkeiten installieren
         run: pip install -r requirements-dev.txt
 
-      - name: Tests ausfuehren
+      - name: Tests ausführen
         run: pytest -v

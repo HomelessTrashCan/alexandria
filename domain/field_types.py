@@ -1,4 +1,4 @@
-"""Unterstuetzte Feldtypen fuer benutzerdefinierte Attribute, siehe docs/claude.md, Zeile 25."""
+"""Unterstützte Feldtypen für benutzerdefinierte Attribute."""
 
 
 class FieldType:

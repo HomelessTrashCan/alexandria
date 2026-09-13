@@ -5,12 +5,7 @@ class Config:
     SECRET_KEY = os.environ["SECRET_KEY"]
     SQLALCHEMY_DATABASE_URI = os.environ["DATABASE_URL"]
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    # Prueft jede Verbindung aus dem Pool vor Gebrauch mit einem leichten
-    # "SELECT 1" und verwirft/ersetzt sie bei Bedarf. Ohne das wuerde eine
-    # DB, die kurz weg war (Neustart, Netzwerkausfall, MySQL/MariaDBs eigenes
-    # "server has gone away" bei langer Inaktivitaet), noch fuer eine Weile
-    # tote Verbindungen aus dem Pool ausliefern und Fehler produzieren, obwohl
-    # die DB laengst wieder erreichbar ist.
+    # Prüft jede Verbindung vor Gebrauch und ersetzt tote (nach DB-Neustart, "server has gone away" o. Ä.).
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
 
     MAIL_SERVER = os.environ.get("MAIL_SERVER") or None
@@ -23,20 +18,13 @@ class Config:
     # Gültigkeitsdauer (Sekunden) für E-Mail-Bestätigungs- und Passwort-Reset-Links.
     TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24
 
-    # RESTful API: Token-Authentifizierung ohne Browser (docs/claude.md, Zeile 21).
+    # Token-Authentifizierung für die REST-API.
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", SECRET_KEY)
     JWT_ACCESS_TOKEN_EXPIRES = 60 * 60 * 8  # 8 Stunden
 
 
 class TestConfig(Config):
-    """Konfiguration fuer die pytest-Suite (siehe tests/conftest.py).
-
-    Eigene Datenbank (cmdb_test), damit Tests niemals echte Entwicklungsdaten
-    beruehren. WTF_CSRF_ENABLED=False, weil der Testclient keinen echten
-    Browser simuliert und sonst jeder POST-Request erst ein CSRF-Token aus
-    einem vorherigen GET extrahieren muesste - reine Testreibung ohne
-    Sicherheitsgewinn, da hier ohnehin kein Cross-Site-Request-Risiko besteht.
-    """
+    """Konfiguration für die pytest-Suite: eigene Datenbank (cmdb_test), CSRF deaktiviert (der Testclient ist kein echter Browser)."""
 
     TESTING = True
     WTF_CSRF_ENABLED = False

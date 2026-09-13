@@ -9,7 +9,7 @@ from backend.app.services.config_items import search_config_items
 
 @api_bp.route("/auth/login", methods=["POST"])
 def login():
-    """Token-Login ohne Browser (docs/claude.md, Zeile 21): POST {"username", "password"} -> JWT."""
+    """Token-Login ohne Browser: POST {"username", "password"} -> JWT."""
     payload = request.get_json(silent=True) or {}
     username = payload.get("username")
     password = payload.get("password")
