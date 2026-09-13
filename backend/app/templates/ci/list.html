@@ -29,6 +29,12 @@
     <button type="submit">Filtern</button>
   </form>
 
+  <p class="export-links">
+    Export der aktuell gefilterten Liste:
+    <a href="{{ url_for('ci.export_csv') }}?{{ request.query_string.decode() }}">CSV</a> ·
+    <a href="{{ url_for('ci.export_pdf') }}?{{ request.query_string.decode() }}">PDF</a>
+  </p>
+
   <table class="table">
     <thead>
       <tr>

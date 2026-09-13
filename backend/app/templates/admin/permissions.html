@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Rechte-Matrix - CMDB{% endblock %}
+{% block content %}
+  <h1>Rechte-Matrix</h1>
+  <p>Übersicht der RBAC-Regeln rein informativ, hier lässt sich nichts ändern. Die Mutationsfunktion wird in einer Versionsupdate geplant.</p>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Aktion</th>
+        {% for role in roles %}<th>{{ Role.LABELS[role] }}</th>{% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for action, allowed_roles in permissions.items() %}
+        <tr>
+          <td>{{ action }}</td>
+          {% for role in roles %}
+            <td>{{ "✓" if role in allowed_roles else "–" }}</td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

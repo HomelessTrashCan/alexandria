@@ -10,7 +10,7 @@ from backend.app.blueprints.auth.forms import (
 )
 from backend.app.blueprints.auth.tokens import confirm_token, generate_token
 from backend.app.extensions import db
-from backend.app.mail import send_email
+from backend.app.email_utils import send_email
 from backend.app.models import User
 
 EMAIL_VERIFY_SALT = "email-verify"
@@ -79,6 +79,8 @@ def login():
             flash("Benutzername oder Kennwort ist falsch.", "danger")
         elif not user.email_verified:
             flash("Bitte bestätige zuerst deine E-Mailadresse.", "warning")
+        elif not user.active:
+            flash("Dieses Konto wurde deaktiviert. Bitte wende dich an einen Administrator.", "danger")
         else:
             login_user(user)
             return redirect(url_for("web.index"))

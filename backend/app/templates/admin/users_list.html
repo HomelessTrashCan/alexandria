@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Benutzerverwaltung - CMDB{% endblock %}
+{% block content %}
+  <h1>Benutzerverwaltung</h1>
+  <p><a href="{{ url_for('admin.permissions_matrix') }}">Rechte-Matrix ansehen</a></p>
+
+  <table class="table">
+    <thead><tr><th>Benutzername</th><th>Name</th><th>E-Mail</th><th>Rolle</th><th>Status</th><th>Aktionen</th></tr></thead>
+    <tbody>
+      {% for u in users %}
+        <tr>
+          <td>{{ u.username }}</td>
+          <td>{{ u.full_name }}</td>
+          <td>{{ u.email }}</td>
+          <td>
+            {% if u.id == current_user.id %}
+              {{ u.role_label }}
+            {% else %}
+              <form method="post" action="{{ url_for('admin.change_user_role', user_id=u.id) }}" class="inline-form">
+                <select name="role" aria-label="Rolle ändern für {{ u.username }}" onchange="this.form.submit()">
+                  {% for role in roles %}
+                    <option value="{{ role }}" {% if role == u.role %}selected{% endif %}>{{ Role.LABELS[role] }}</option>
+                  {% endfor %}
+                </select>
+              </form>
+            {% endif %}
+          </td>
+          <td>{{ "Aktiv" if u.active else "Deaktiviert" }}</td>
+          <td class="actions">
+            {% if u.id != current_user.id %}
+              <form method="post" action="{{ url_for('admin.toggle_user_active', user_id=u.id) }}" class="inline-form">
+                <button type="submit">{{ "Deaktivieren" if u.active else "Aktivieren" }}</button>
+              </form>
+            {% else %}
+              <em>(eigenes Konto)</em>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6">Keine Benutzer vorhanden.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

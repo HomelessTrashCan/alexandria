@@ -1,0 +1,64 @@
+# Startet MariaDB und die Flask-App zusammen mit einem Befehl: docker compose up
+#
+# Loest das Netzwerk-Problem aus der manuellen "docker run"-Variante: Docker
+# Compose legt automatisch ein gemeinsames Netzwerk an, in dem sich Container
+# gegenseitig per Servicename ansprechen koennen (hier: der Hostname "db"
+# fuer die Datenbank) - kein host.docker.internal noetig.
+#
+# Zugangsdaten stehen bewusst NICHT hier im File, sondern in .env (siehe
+# .env.example) - docker compose liest .env automatisch aus demselben
+# Verzeichnis und ersetzt ${VARIABLE}-Platzhalter unten damit, noch bevor
+# irgendein Container startet. .env ist gitignored, landet also nie im
+# Repository.
+#
+# Ersetzt den frueher manuell per "docker run" gestarteten "cmdb-mariadb"-
+# Container - MariaDB wird jetzt ausschliesslich hierueber verwaltet.
+#
+# Neben der Hauptdatenbank ("cmdb", ueber MARIADB_DATABASE) legt
+# docker/init-db/01-create-test-database.sql beim allerersten Start
+# zusaetzlich "cmdb_test" an (fuer die pytest-Suite, siehe
+# backend/app/config.py TestConfig) - ohne dieses Skript wuerde diese
+# Datenbank fehlen, da das MariaDB-Image von Haus aus nur eine einzige
+# Datenbank automatisch anlegt.
+
+services:
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    volumes:
+      - cmdb-db-data:/var/lib/mysql
+      - ./docker/init-db:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-u${MARIADB_USER}", "-p${MARIADB_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    # Liest SECRET_KEY/MAIL_*/MARIADB_* aus deiner bestehenden .env (siehe
+    # .env.example). DATABASE_URL wird bewusst darunter erneut gesetzt: der
+    # Wert in .env ist fuer die lokale Entwicklung ausserhalb von Docker
+    # gedacht (Host "localhost") und passt hier nicht - "environment"
+    # ueberschreibt "env_file" fuer denselben Schluessel, die Zugangsdaten
+    # selbst kommen aber ueber die ${...}-Platzhalter trotzdem aus .env.
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: mysql+pymysql://${MARIADB_USER}:${MARIADB_PASSWORD}@db:3306/${MARIADB_DATABASE}
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+volumes:
+  cmdb-db-data:

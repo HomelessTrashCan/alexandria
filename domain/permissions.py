@@ -24,6 +24,8 @@ PERMISSIONS = {
     "field_definition.update": (Role.ADMIN,),
     "field_definition.archive": (Role.ADMIN,),
     "field_definition.delete": (Role.ADMIN,),
+    # Benutzerverwaltung (Rollen zuweisen, Konten deaktivieren), docs/toDo.md.
+    "user.manage": (Role.ADMIN,),
 }
 
 

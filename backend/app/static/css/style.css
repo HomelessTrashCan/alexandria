@@ -43,6 +43,7 @@ main {
 .flash-success { background: #e3f7e3; }
 .flash-danger { background: #fbe3e3; }
 .flash-warning { background: #fff6e0; }
+.flash-info { background: #e3eefb; }
 
 .field-error {
   color: #b00020;

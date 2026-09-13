@@ -1,10 +1,15 @@
 from flask import abort, flash, redirect, render_template, request, url_for
+from flask_login import current_user
 
 from backend.app.authorization import permission_required
 from backend.app.blueprints.admin import admin_bp
 from backend.app.blueprints.admin.forms import ConfigItemTypeForm, FieldDefinitionForm
-from backend.app.models import ConfigItemType, FieldDefinition
+from backend.app.extensions import db
+from backend.app.models import ChangeLogEntry, ConfigItemType, FieldDefinition, User
 from backend.app.services import ci_types as type_service
+from backend.app.services import user_admin as user_admin_service
+from domain.permissions import PERMISSIONS
+from domain.roles import Role
 
 
 @admin_bp.route("/types")
@@ -48,7 +53,12 @@ def edit_type(type_id: int):
 @admin_bp.route("/types/<int:type_id>/delete", methods=["POST"])
 @permission_required("config_item_type.delete")
 def delete_type(type_id: int):
-    config_item_type = ConfigItemType.query.get_or_404(type_id)
+    config_item_type = db.session.get(ConfigItemType, type_id)
+    if config_item_type is None:
+        # Bereits geloescht (z. B. zeitgleich in einem anderen Fenster) - idempotent behandeln, kein 404 (siehe docs/toDo.md).
+        flash("CI-Typ war bereits gelöscht.", "info")
+        return redirect(url_for("admin.list_types"))
+
     name = config_item_type.name
     ok, error = type_service.delete_type(config_item_type)
     if ok:
@@ -106,10 +116,75 @@ def archive_field(type_id: int, field_id: int):
 @admin_bp.route("/types/<int:type_id>/fields/<int:field_id>/delete", methods=["POST"])
 @permission_required("field_definition.delete")
 def delete_field(type_id: int, field_id: int):
-    field = FieldDefinition.query.get_or_404(field_id)
+    field = db.session.get(FieldDefinition, field_id)
+    if field is None:
+        # Bereits geloescht (z. B. zeitgleich in einem anderen Fenster) - idempotent behandeln, kein 404 (siehe docs/toDo.md).
+        flash("Feld war bereits gelöscht.", "info")
+        return redirect(url_for("admin.type_detail", type_id=type_id))
     if field.config_item_type_id != type_id:
+        # Keine Race-Condition, sondern eine URL-Integritaetspruefung (Feld gehoert nicht zu diesem Typ) - bleibt ein echter 404.
         abort(404)
     name = field.name
     type_service.delete_field(field)
     flash(f'Feld "{name}" wurde endgültig gelöscht.', "success")
     return redirect(url_for("admin.type_detail", type_id=type_id))
+
+
+@admin_bp.route("/users")
+@permission_required("user.manage")
+def list_users():
+    users = User.query.order_by(User.username).all()
+    return render_template("admin/users_list.html", users=users, roles=Role.ALL)
+
+
+@admin_bp.route("/users/<int:user_id>/role", methods=["POST"])
+@permission_required("user.manage")
+def change_user_role(user_id: int):
+    target_user = db.session.get(User, user_id)
+    if target_user is None:
+        flash("Benutzerkonto wurde nicht gefunden.", "danger")
+        return redirect(url_for("admin.list_users"))
+
+    new_role = request.form.get("role")
+    if new_role not in Role.ALL:
+        flash("Ungültige Rolle.", "danger")
+        return redirect(url_for("admin.list_users"))
+
+    try:
+        user_admin_service.update_role(target_user, new_role, acting_user=current_user)
+    except user_admin_service.SelfManagementError as error:
+        flash(str(error), "danger")
+    else:
+        flash(f'Rolle von "{target_user.username}" wurde auf {Role.LABELS[new_role]} geändert.', "success")
+    return redirect(url_for("admin.list_users"))
+
+
+@admin_bp.route("/users/<int:user_id>/toggle-active", methods=["POST"])
+@permission_required("user.manage")
+def toggle_user_active(user_id: int):
+    target_user = db.session.get(User, user_id)
+    if target_user is None:
+        flash("Benutzerkonto wurde nicht gefunden.", "danger")
+        return redirect(url_for("admin.list_users"))
+
+    try:
+        user_admin_service.set_active(target_user, active=not target_user.active, acting_user=current_user)
+    except user_admin_service.SelfManagementError as error:
+        flash(str(error), "danger")
+    else:
+        flash(f'Konto "{target_user.username}" wurde {"aktiviert" if target_user.active else "deaktiviert"}.', "success")
+    return redirect(url_for("admin.list_users"))
+
+
+@admin_bp.route("/permissions")
+@permission_required("user.manage")
+def permissions_matrix():
+    return render_template("admin/permissions.html", permissions=PERMISSIONS, roles=Role.ALL)
+
+
+@admin_bp.route("/audit-log")
+@permission_required("config_item.history_read")
+def audit_log():
+    page = request.args.get("page", 1, type=int)
+    pagination = ChangeLogEntry.query.order_by(ChangeLogEntry.changed_at.desc()).paginate(page=page, per_page=50, error_out=False)
+    return render_template("admin/audit_log.html", pagination=pagination)

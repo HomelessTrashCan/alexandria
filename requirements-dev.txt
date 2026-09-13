@@ -1,0 +1,3 @@
+# Zusaetzlich zu requirements.txt fuer lokale Entwicklung/Tests, nicht fuer Produktivbetrieb.
+-r requirements.txt
+pytest>=8.0

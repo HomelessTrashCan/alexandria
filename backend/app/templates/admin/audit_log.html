@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Audit-Log - CMDB{% endblock %}
+{% block content %}
+  <h1>Audit-Log</h1>
+  <p>Globale Änderungshistorie über alle Konfigurationselemente hinweg, neueste zuerst.</p>
+
+  <table class="table">
+    <thead><tr><th>Zeitpunkt</th><th>Konfigurationselement</th><th>Aktion</th><th>Feld</th><th>Alt</th><th>Neu</th><th>Von</th></tr></thead>
+    <tbody>
+      {% for entry in pagination.items %}
+        <tr>
+          <td>{{ entry.changed_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td><a href="{{ url_for('ci.detail', item_id=entry.config_item_id) }}">{{ entry.config_item.name }}</a></td>
+          <td>{{ ChangeAction.LABELS.get(entry.action, entry.action) }}</td>
+          <td>{{ entry.field_definition.name if entry.field_definition else "-" }}</td>
+          <td>{{ entry.old_value or "-" }}</td>
+          <td>{{ entry.new_value or "-" }}</td>
+          <td>{{ entry.changed_by.username }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7">Noch keine Einträge vorhanden.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="pagination">
+    {% if pagination.has_prev %}
+      <a href="{{ url_for('admin.audit_log', page=pagination.prev_num) }}">&laquo; Neuere</a>
+    {% endif %}
+    Seite {{ pagination.page }} von {{ pagination.pages or 1 }}
+    {% if pagination.has_next %}
+      <a href="{{ url_for('admin.audit_log', page=pagination.next_num) }}">Ältere &raquo;</a>
+    {% endif %}
+  </p>
+{% endblock %}

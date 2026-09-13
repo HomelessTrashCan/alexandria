@@ -80,7 +80,7 @@
         {% for entry in item.change_log_entries %}
           <tr>
             <td>{{ entry.changed_at.strftime("%Y-%m-%d %H:%M") }}</td>
-            <td>{{ entry.action }}</td>
+            <td>{{ ChangeAction.LABELS.get(entry.action, entry.action) }}</td>
             <td>{{ entry.field_definition.name if entry.field_definition else "-" }}</td>
             <td>{{ entry.old_value or "-" }}</td>
             <td>{{ entry.new_value or "-" }}</td>

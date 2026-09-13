@@ -15,6 +15,12 @@
         {% if has_permission(current_user.role, "config_item_type.create") %}
           <a href="{{ url_for('admin.list_types') }}">Verwaltung</a>
         {% endif %}
+        {% if has_permission(current_user.role, "user.manage") %}
+          <a href="{{ url_for('admin.list_users') }}">Benutzer</a>
+        {% endif %}
+        {% if has_permission(current_user.role, "config_item.history_read") %}
+          <a href="{{ url_for('admin.audit_log') }}">Audit-Log</a>
+        {% endif %}
       {% endif %}
     </div>
     <nav class="navbar-end">
