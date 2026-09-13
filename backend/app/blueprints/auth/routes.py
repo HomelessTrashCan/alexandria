@@ -38,7 +38,7 @@ def register():
         verify_url = url_for("auth.verify_email", token=token, _external=True)
         send_email(
             to=user.email,
-            subject="CMDB: E-Mailadresse bestätigen",
+            subject="Alexandria: E-Mailadresse bestätigen",
             body=f"Hallo {user.first_name}\n\nBitte bestätige deine E-Mailadresse:\n{verify_url}\n\nDer Link ist 24 Stunden gültig.",
         )
         flash("Registrierung erfolgreich. Bitte bestätige deine E-Mailadresse über den zugesendeten Link.", "success")
@@ -105,7 +105,7 @@ def request_password_reset():
             reset_url = url_for("auth.reset_password", token=token, _external=True)
             send_email(
                 to=user.email,
-                subject="CMDB: Kennwort zurücksetzen",
+                subject="Alexandria: Kennwort zurücksetzen",
                 body=f"Hallo {user.first_name}\n\nSetze dein Kennwort über diesen Link zurück:\n{reset_url}\n\nDer Link ist 24 Stunden gültig.",
             )
         # Bewusst dieselbe Meldung unabhängig davon, ob die E-Mail existiert

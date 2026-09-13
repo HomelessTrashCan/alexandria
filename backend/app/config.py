@@ -13,7 +13,7 @@ class Config:
     MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "true").lower() == "true"
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME") or None
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD") or None
-    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER", "cmdb@example.com")
+    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER", "alexandria@example.com")
 
     # Gültigkeitsdauer (Sekunden) für E-Mail-Bestätigungs- und Passwort-Reset-Links.
     TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24

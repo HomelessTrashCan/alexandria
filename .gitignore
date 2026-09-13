@@ -12,5 +12,3 @@ instance/
 .coverage
 htmlcov/
 *.log
-tests
-tests/

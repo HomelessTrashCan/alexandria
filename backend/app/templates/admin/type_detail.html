@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ config_item_type.name }} - Verwaltung - CMDB{% endblock %}
+{% block title %}{{ config_item_type.name }} - Verwaltung - Alexandria{% endblock %}
 {% block content %}
   <h1>{{ config_item_type.name }}</h1>
   <p>{{ config_item_type.description or "" }}</p>
@@ -26,7 +26,7 @@
           <td>{{ field.field_type }}</td>
           <td>{{ "Ja" if field.required else "Nein" }}</td>
           <td>{{ "Archiviert" if field.archived else "Aktiv" }}</td>
-          <td class="actions">
+          <td class="table-actions">
             {% if has_permission(current_user.role, "field_definition.update") %}
               <a href="{{ url_for('admin.edit_field', type_id=config_item_type.id, field_id=field.id) }}">Bearbeiten</a>
             {% endif %}

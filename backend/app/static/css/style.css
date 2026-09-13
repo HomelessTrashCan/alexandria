@@ -1,15 +1,56 @@
-body {
-  font-family: system-ui, sans-serif;
-  margin: 0;
-  color: #1a1a1a;
+:root {
+  --color-primary: #6d28d9;
+  --color-primary-dark: #5b21b6;
+  --color-primary-light: #f3edfc;
+  --color-bg: #ffffff;
+  --color-surface: #faf9fc;
+  --color-border: #e6e1ee;
+  --color-text: #201a29;
+  --color-text-muted: #6f6680;
+  --color-danger: #b3261e;
+  --color-danger-bg: #fbeceb;
+  --color-success: #1e7d32;
+  --color-success-bg: #e9f6ea;
+  --color-warning: #8a5a00;
+  --color-warning-bg: #fff6e0;
+  --color-info: #1a4a8a;
+  --color-info-bg: #e9f1fc;
 }
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  margin: 0;
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.5;
+}
+
+h1, h2, h3 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Navigation */
 
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1.5rem;
-  border-bottom: 1px solid #ddd;
+  padding: 1rem 1.5rem;
+  background: var(--color-primary);
 }
 
 .navbar-start,
@@ -23,47 +64,233 @@ body {
   gap: 1rem;
 }
 
-main {
-  max-width: 40rem;
-  margin: 2rem auto;
-  padding: 0 1rem;
+.navbar a,
+.navbar span {
+  color: #fff;
 }
+
+.navbar-start a,
+.navbar-end a {
+  opacity: 0.85;
+}
+
+.navbar-start a:hover,
+.navbar-end a:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+}
+
+.brand-logo {
+  display: block;
+  height: 1.75rem;
+  width: auto;
+}
+
+/* Layout */
+
+main {
+  max-width: 64rem;
+  margin: 2.5rem auto;
+  padding: 0 1.5rem;
+}
+
+/* Flash-Meldungen */
 
 .flashes {
   list-style: none;
   padding: 0;
+  margin: 0 0 1.5rem;
 }
 
 .flash {
-  padding: 0.5rem 0.75rem;
+  padding: 0.65rem 1rem;
   margin-bottom: 0.5rem;
-  border-radius: 4px;
+  border-radius: 6px;
+  border-left: 3px solid transparent;
+  font-size: 0.9rem;
 }
 
-.flash-success { background: #e3f7e3; }
-.flash-danger { background: #fbe3e3; }
-.flash-warning { background: #fff6e0; }
-.flash-info { background: #e3eefb; }
+.flash-success { background: var(--color-success-bg); border-color: var(--color-success); color: var(--color-success); }
+.flash-danger  { background: var(--color-danger-bg);  border-color: var(--color-danger);  color: var(--color-danger); }
+.flash-warning { background: var(--color-warning-bg); border-color: var(--color-warning); color: var(--color-warning); }
+.flash-info    { background: var(--color-info-bg);    border-color: var(--color-info);    color: var(--color-info); }
+
+/* Formulare */
+
+form p {
+  margin: 0 0 1rem;
+}
+
+label {
+  display: inline-block;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="date"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  max-width: 24rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+input[type="checkbox"] {
+  width: auto;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
 
 .field-error {
-  color: #b00020;
+  color: var(--color-danger);
+  font-size: 0.825rem;
+}
+
+/* Buttons */
+
+button,
+input[type="submit"] {
+  display: inline-block;
+  padding: 0.5rem 1.1rem;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+button:hover,
+input[type="submit"]:hover {
+  background: var(--color-primary-dark);
+}
+
+.inline-form {
+  display: inline-block;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.actions button,
+.actions input[type="submit"] {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+/* Für Aktionen innerhalb einer Tabellenzelle: kein display:flex, das würde
+   die Zelle aus dem Tabellen-Layout nehmen und die Zeilenrahmen verschieben. */
+.table-actions {
+  white-space: nowrap;
+}
+
+.table-actions > * + * {
+  margin-left: 0.75rem;
+}
+
+.table-actions button,
+.table-actions input[type="submit"] {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+/* Filter- und Export-Leiste */
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.filter-bar input,
+.filter-bar select {
+  width: auto;
+  max-width: none;
+}
+
+.filter-bar button {
+  margin-left: auto;
+}
+
+.export-links {
+  margin: 0.5rem 0 1.5rem;
+  color: var(--color-text-muted);
   font-size: 0.875rem;
 }
+
+.export-links a {
+  font-weight: 500;
+}
+
+/* Tabellen */
 
 .table {
   width: 100%;
   border-collapse: collapse;
-  border-color: #1a1a1a;
   margin: 1rem 0;
+  font-size: 0.925rem;
 }
 
 .table th,
 .table td {
-  padding: 0.5rem 1.25rem 0.5rem 0;
+  padding: 0.65rem 1.25rem 0.65rem 0;
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .table thead th {
-  border-bottom: 2px solid #1a1a1a;
+  border-bottom: 2px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.table tbody tr:hover {
+  background: var(--color-surface);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
 }

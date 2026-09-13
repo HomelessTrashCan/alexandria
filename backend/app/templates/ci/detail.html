@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ item.name }} - CMDB{% endblock %}
+{% block title %}{{ item.name }} - Alexandria{% endblock %}
 {% block content %}
   <h1>{{ item.name }}</h1>
   <p>Typ: {{ item.config_item_type.name }} &middot; Status: {{ "Archiviert" if item.is_archived else "Aktiv" }}</p>

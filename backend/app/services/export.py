@@ -49,7 +49,7 @@ def build_pdf(items) -> bytes:
 
     generated_at = datetime.now(timezone.utc).strftime("%d.%m.%Y %H:%M")
     elements = [
-        Paragraph("Konfigurationselemente – CMDB-Export", styles["Title"]),
+        Paragraph("Konfigurationselemente – Alexandria-Export", styles["Title"]),
         Paragraph(f"Erstellt am {generated_at} UTC · {len(items)} Einträge", styles["Normal"]),
         Spacer(1, 0.5 * cm),
     ]
