@@ -42,3 +42,34 @@ class ResetPasswordForm(FlaskForm):
         "Kennwort bestätigen", validators=[DataRequired(), EqualTo("password", message="Kennwörter stimmen nicht überein.")]
     )
     submit = SubmitField("Kennwort speichern")
+
+
+class AccountForm(FlaskForm):
+    """Self-Service-Profil: Vor-/Nachname für alle Rollen. Die E-Mailadresse
+    ist laut RBAC-Matrix nur für Admins selbst anpassbar, siehe AdminAccountForm."""
+
+    first_name = StringField("Vorname", validators=[DataRequired(), Length(max=64)])
+    last_name = StringField("Nachname", validators=[DataRequired(), Length(max=64)])
+    submit = SubmitField("Speichern")
+
+
+class AdminAccountForm(AccountForm):
+    email = StringField("E-Mailadresse", validators=[DataRequired(), Email(), Length(max=255)])
+
+    def __init__(self, current_user_id: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.current_user_id = current_user_id
+
+    def validate_email(self, field):
+        existing = User.query.filter_by(email=field.data).first()
+        if existing is not None and existing.id != self.current_user_id:
+            raise ValidationError("Diese E-Mailadresse ist bereits registriert.")
+
+
+class ChangeOwnPasswordForm(FlaskForm):
+    current_password = PasswordField("Aktuelles Kennwort", validators=[DataRequired()])
+    new_password = PasswordField("Neues Kennwort", validators=[DataRequired(), Length(min=8)])
+    confirm_new_password = PasswordField(
+        "Neues Kennwort bestätigen", validators=[DataRequired(), EqualTo("new_password", message="Kennwörter stimmen nicht überein.")]
+    )
+    submit = SubmitField("Kennwort ändern")

@@ -3,7 +3,9 @@ from flask_login import current_user
 
 from backend.app.authorization import permission_required
 from backend.app.blueprints.admin import admin_bp
-from backend.app.blueprints.admin.forms import ConfigItemTypeForm, FieldDefinitionForm
+from backend.app.blueprints.admin.forms import ConfigItemTypeForm, CreateUserForm, FieldDefinitionForm
+from backend.app.blueprints.auth.tokens import EMAIL_VERIFY_SALT, generate_token
+from backend.app.email_utils import send_email
 from backend.app.extensions import db
 from backend.app.models import ChangeLogEntry, ConfigItemType, FieldDefinition, User
 from backend.app.services import ci_types as type_service
@@ -137,6 +139,36 @@ def list_users():
     return render_template("admin/users_list.html", users=users, roles=Role.ALL)
 
 
+@admin_bp.route("/users/new", methods=["GET", "POST"])
+@permission_required("user.manage")
+def new_user():
+    form = CreateUserForm()
+    if form.validate_on_submit():
+        user = user_admin_service.create_user(
+            username=form.username.data,
+            first_name=form.first_name.data,
+            last_name=form.last_name.data,
+            email=form.email.data,
+            password=form.password.data,
+            role=form.role.data,
+        )
+        token = generate_token(user.email, salt=EMAIL_VERIFY_SALT)
+        verify_url = url_for("auth.verify_email", token=token, _external=True)
+        send_email(
+            to=user.email,
+            subject="Alexandria: Konto erstellt - E-Mailadresse bestätigen",
+            body=(
+                f"Hallo {user.first_name}\n\n"
+                "Eine administrierende Person hat ein Konto für dich angelegt. "
+                f"Bitte bestätige deine E-Mailadresse, um dich anmelden zu können:\n{verify_url}\n\n"
+                "Der Link ist 24 Stunden gültig."
+            ),
+        )
+        flash(f'Konto "{user.username}" wurde angelegt. Eine Bestätigungs-E-Mail wurde versendet.', "success")
+        return redirect(url_for("admin.list_users"))
+    return render_template("admin/user_form.html", form=form)
+
+
 @admin_bp.route("/users/<int:user_id>/role", methods=["POST"])
 @permission_required("user.manage")
 def change_user_role(user_id: int):
@@ -176,14 +208,36 @@ def toggle_user_active(user_id: int):
     return redirect(url_for("admin.list_users"))
 
 
-@admin_bp.route("/permissions")
+@admin_bp.route("/users/<int:user_id>/delete", methods=["POST"])
 @permission_required("user.manage")
+def delete_user(user_id: int):
+    target_user = db.session.get(User, user_id)
+    if target_user is None:
+        # Schon gelöscht (z. B. in einem anderen Fenster) - idempotent, kein 404.
+        flash("Benutzerkonto war bereits gelöscht.", "info")
+        return redirect(url_for("admin.list_users"))
+
+    try:
+        ok, error = user_admin_service.delete_user(target_user, acting_user=current_user)
+    except user_admin_service.SelfManagementError as error:
+        flash(str(error), "danger")
+        return redirect(url_for("admin.list_users"))
+
+    if ok:
+        flash(f'Konto "{target_user.username}" wurde gelöscht.', "success")
+    else:
+        flash(error, "danger")
+    return redirect(url_for("admin.list_users"))
+
+
+@admin_bp.route("/permissions")
+@permission_required("audit.read")
 def permissions_matrix():
     return render_template("admin/permissions.html", permissions=PERMISSIONS, roles=Role.ALL)
 
 
 @admin_bp.route("/audit-log")
-@permission_required("config_item.history_read")
+@permission_required("audit.read")
 def audit_log():
     page = request.args.get("page", 1, type=int)
     pagination = ChangeLogEntry.query.order_by(ChangeLogEntry.changed_at.desc()).paginate(page=page, per_page=50, error_out=False)

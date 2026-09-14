@@ -30,7 +30,8 @@ services:
     restart: unless-stopped
 
   app:
-    build: .
+    image: rr/alexandria:v1.0.1
+    #build: rr/alexandria:v1.0.1 .
     depends_on:
       db:
         condition: service_healthy

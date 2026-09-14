@@ -27,7 +27,7 @@ def test_api_route_returns_json_error_when_database_is_unreachable():
     broken_app = create_app(UnreachableDatabaseConfig)
     client = broken_app.test_client()
 
-    resp = client.post("/api/auth/login", json={"username": "irgendwer", "password": "irgendwas"})
+    resp = client.post("/api/v1/auth/login", json={"username": "irgendwer", "password": "irgendwas"})
 
     assert resp.status_code == 503
     assert "nicht erreichbar" in resp.get_json()["error"]

@@ -21,6 +21,7 @@ PERMISSIONS = {
     "field_definition.archive": (Role.ADMIN,),
     "field_definition.delete": (Role.ADMIN,),
     "user.manage": (Role.ADMIN,),
+    "audit.read": (Role.ADMIN,),
 }
 
 

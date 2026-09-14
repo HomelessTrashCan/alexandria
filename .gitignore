@@ -12,3 +12,4 @@ instance/
 .coverage
 htmlcov/
 *.log
+backups/

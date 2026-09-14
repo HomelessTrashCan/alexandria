@@ -1,9 +1,10 @@
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, SelectField, StringField, SubmitField
-from wtforms.validators import DataRequired, Length, ValidationError
+from wtforms import BooleanField, PasswordField, SelectField, StringField, SubmitField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
 
-from backend.app.models import ConfigItemType, FieldDefinition
+from backend.app.models import ConfigItemType, FieldDefinition, User
 from domain.field_types import FieldType
+from domain.roles import Role
 
 
 class ConfigItemTypeForm(FlaskForm):
@@ -46,3 +47,24 @@ class FieldDefinitionForm(FlaskForm):
             options = [option.strip() for option in (field.data or "").split(",") if option.strip()]
             if not options:
                 raise ValidationError("Bitte mindestens eine Option angeben (mit Komma trennen).")
+
+
+class CreateUserForm(FlaskForm):
+    username = StringField("Benutzername", validators=[DataRequired(), Length(min=3, max=64)])
+    first_name = StringField("Vorname", validators=[DataRequired(), Length(max=64)])
+    last_name = StringField("Nachname", validators=[DataRequired(), Length(max=64)])
+    email = StringField("E-Mailadresse", validators=[DataRequired(), Email(), Length(max=255)])
+    role = SelectField("Rolle", choices=[(value, Role.LABELS[value]) for value in Role.ALL], validators=[DataRequired()])
+    password = PasswordField("Kennwort", validators=[DataRequired(), Length(min=8)])
+    confirm_password = PasswordField(
+        "Kennwort bestätigen", validators=[DataRequired(), EqualTo("password", message="Kennwörter stimmen nicht überein.")]
+    )
+    submit = SubmitField("Konto anlegen")
+
+    def validate_username(self, field):
+        if User.query.filter_by(username=field.data).first() is not None:
+            raise ValidationError("Dieser Benutzername ist bereits vergeben.")
+
+    def validate_email(self, field):
+        if User.query.filter_by(email=field.data).first() is not None:
+            raise ValidationError("Diese E-Mailadresse ist bereits registriert.")

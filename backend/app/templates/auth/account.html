@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Mein Konto - Alexandria{% endblock %}
+{% block content %}
+  <h1>Mein Konto</h1>
+
+  <h2>Profil</h2>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+      {{ form.first_name.label }}<br>
+      {{ form.first_name(size=30) }}
+      {% for error in form.first_name.errors %}
+        <span class="field-error">{{ error }}</span><br>
+      {% endfor %}
+    </p>
+    <p>
+      {{ form.last_name.label }}<br>
+      {{ form.last_name(size=30) }}
+      {% for error in form.last_name.errors %}
+        <span class="field-error">{{ error }}</span><br>
+      {% endfor %}
+    </p>
+    <p>
+      <label>E-Mailadresse</label><br>
+      {% if is_admin %}
+        {{ form.email(size=40) }}
+        {% for error in form.email.errors %}
+          <span class="field-error">{{ error }}</span><br>
+        {% endfor %}
+      {% else %}
+        {{ current_user.email }}
+        <br><small>Nur eine administrierende Person kann die E-Mailadresse ändern.</small>
+      {% endif %}
+    </p>
+    {{ form.submit() }}
+  </form>
+
+  <h2>Kennwort ändern</h2>
+  <form method="post" action="{{ url_for('auth.change_own_password') }}" novalidate>
+    {{ password_form.hidden_tag() }}
+    <p>
+      {{ password_form.current_password.label }}<br>
+      {{ password_form.current_password(size=30) }}
+    </p>
+    <p>
+      {{ password_form.new_password.label }}<br>
+      {{ password_form.new_password(size=30) }}
+    </p>
+    <p>
+      {{ password_form.confirm_new_password.label }}<br>
+      {{ password_form.confirm_new_password(size=30) }}
+    </p>
+    {{ password_form.submit() }}
+  </form>
+{% endblock %}

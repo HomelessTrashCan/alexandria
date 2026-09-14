@@ -2,7 +2,10 @@
 {% block title %}Benutzerverwaltung - Alexandria{% endblock %}
 {% block content %}
   <h1>Benutzerverwaltung</h1>
-  <p><a href="{{ url_for('admin.permissions_matrix') }}">Rechte-Matrix ansehen</a></p>
+  <p>
+    <a href="{{ url_for('admin.new_user') }}">+ Neues Benutzerkonto</a> ·
+    <a href="{{ url_for('admin.permissions_matrix') }}">Rechte-Matrix ansehen</a>
+  </p>
 
   <table class="table">
     <thead><tr><th>Benutzername</th><th>Name</th><th>E-Mail</th><th>Rolle</th><th>Status</th><th>Aktionen</th></tr></thead>
@@ -26,10 +29,14 @@
             {% endif %}
           </td>
           <td>{{ "Aktiv" if u.active else "Deaktiviert" }}</td>
-          <td>
+          <td class="table-actions">
             {% if u.id != current_user.id %}
               <form method="post" action="{{ url_for('admin.toggle_user_active', user_id=u.id) }}" class="inline-form">
                 <button type="submit">{{ "Deaktivieren" if u.active else "Aktivieren" }}</button>
+              </form>
+              <form method="post" action="{{ url_for('admin.delete_user', user_id=u.id) }}" class="inline-form"
+                    onsubmit="return confirm('Konto von {{ u.username }} wirklich endgültig löschen?');">
+                <button type="submit">Löschen</button>
               </form>
             {% else %}
               <em>(eigenes Konto)</em>

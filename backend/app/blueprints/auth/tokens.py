@@ -2,6 +2,9 @@ from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 from flask import current_app
 
+EMAIL_VERIFY_SALT = "email-verify"
+PASSWORD_RESET_SALT = "password-reset"
+
 
 def _serializer() -> URLSafeTimedSerializer:
     return URLSafeTimedSerializer(current_app.config["SECRET_KEY"])

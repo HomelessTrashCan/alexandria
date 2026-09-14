@@ -3,18 +3,19 @@ from flask_login import current_user, login_required, login_user, logout_user
 
 from backend.app.blueprints.auth import auth_bp
 from backend.app.blueprints.auth.forms import (
+    AccountForm,
+    AdminAccountForm,
+    ChangeOwnPasswordForm,
     LoginForm,
     RegistrationForm,
     RequestPasswordResetForm,
     ResetPasswordForm,
 )
-from backend.app.blueprints.auth.tokens import confirm_token, generate_token
+from backend.app.blueprints.auth.tokens import EMAIL_VERIFY_SALT, PASSWORD_RESET_SALT, confirm_token, generate_token
 from backend.app.extensions import db
 from backend.app.email_utils import send_email
 from backend.app.models import User
-
-EMAIL_VERIFY_SALT = "email-verify"
-PASSWORD_RESET_SALT = "password-reset"
+from domain.roles import Role
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
@@ -136,3 +137,54 @@ def reset_password(token: str):
         return redirect(url_for("auth.login"))
 
     return render_template("auth/reset_password.html", form=form)
+
+
+@auth_bp.route("/account", methods=["GET", "POST"])
+@login_required
+def account():
+    is_admin = current_user.role == Role.ADMIN
+    form = AdminAccountForm(current_user_id=current_user.id, obj=current_user) if is_admin else AccountForm(obj=current_user)
+
+    if form.validate_on_submit():
+        current_user.first_name = form.first_name.data
+        current_user.last_name = form.last_name.data
+
+        if is_admin and form.email.data != current_user.email:
+            current_user.email = form.email.data
+            # Eine neue, noch unbestätigte Adresse darf nicht als verifiziert
+            # gelten - dieselbe Regel wie bei der Registrierung.
+            current_user.email_verified = False
+            db.session.commit()
+
+            token = generate_token(current_user.email, salt=EMAIL_VERIFY_SALT)
+            verify_url = url_for("auth.verify_email", token=token, _external=True)
+            send_email(
+                to=current_user.email,
+                subject="Alexandria: E-Mailadresse bestätigen",
+                body=f"Hallo {current_user.first_name}\n\nBitte bestätige deine neue E-Mailadresse:\n{verify_url}\n\nDer Link ist 24 Stunden gültig.",
+            )
+            flash("Profil aktualisiert. Bitte bestätige deine neue E-Mailadresse über den zugesendeten Link.", "warning")
+        else:
+            db.session.commit()
+            flash("Profil aktualisiert.", "success")
+        return redirect(url_for("auth.account"))
+
+    return render_template("auth/account.html", form=form, password_form=ChangeOwnPasswordForm(), is_admin=is_admin)
+
+
+@auth_bp.route("/account/password", methods=["POST"])
+@login_required
+def change_own_password():
+    form = ChangeOwnPasswordForm()
+    if form.validate_on_submit():
+        if not current_user.check_password(form.current_password.data):
+            flash("Aktuelles Kennwort ist falsch.", "danger")
+        else:
+            current_user.set_password(form.new_password.data)
+            db.session.commit()
+            flash("Kennwort wurde geändert.", "success")
+    else:
+        for field_errors in form.errors.values():
+            for error in field_errors:
+                flash(error, "danger")
+    return redirect(url_for("auth.account"))
