@@ -1,8 +1,8 @@
-docs
-
+docs/
 
 .env
 .venv/
+venv/
 __pycache__/
 *.pyc
 instance/
@@ -13,13 +13,3 @@ instance/
 htmlcov/
 *.log
 backups/
-.dockerignore
-.env.example
-.flaskenv
-docker-compose.yml
-docker-entrypoint.sh
-Dockerfile
-pytest.ini
-requirements-dev.txt
-start.py
-wsgi.py
