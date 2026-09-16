@@ -1,5 +1,9 @@
 import os
 
+from dotenv import load_dotenv
+basedir = os.path.abspath(os.path.dirname(__file__)) 
+load_dotenv(os.path.join(basedir, '..', '..', '.env'))
+
 
 class Config:
     SECRET_KEY = os.environ["SECRET_KEY"]
@@ -9,7 +13,7 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
 
     MAIL_SERVER = os.environ.get("MAIL_SERVER") or None
-    MAIL_PORT = int(os.environ.get("MAIL_PORT", 587))
+    MAIL_PORT = int(os.environ.get("MAIL_PORT", 25))
     MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "true").lower() == "true"
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME") or None
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD") or None
@@ -23,12 +27,3 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = 60 * 60 * 8  # 8 Stunden
 
 
-class TestConfig(Config):
-    """Konfiguration für die pytest-Suite: eigene Datenbank (cmdb_test), CSRF deaktiviert (der Testclient ist kein echter Browser)."""
-
-    TESTING = True
-    WTF_CSRF_ENABLED = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "TEST_DATABASE_URL", "mysql+pymysql://cmdb_user:cmdb_password@127.0.0.1:3306/cmdb_test"
-    )
-    MAIL_SERVER = None
