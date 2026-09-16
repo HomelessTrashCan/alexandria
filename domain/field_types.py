@@ -7,8 +7,10 @@ class FieldType:
     DATE = "date"
     BOOLEAN = "boolean"
     SELECT = "select"
+    IPV4 = "ipv4"
+    IPV6 = "ipv6"
 
-    ALL = (TEXT, NUMBER, DATE, BOOLEAN, SELECT)
+    ALL = (TEXT, NUMBER, DATE, BOOLEAN, SELECT, IPV4, IPV6)
 
     LABELS = {
         TEXT: "Text",
@@ -16,4 +18,6 @@ class FieldType:
         DATE: "Datum",
         BOOLEAN: "Wahrheitswert",
         SELECT: "Auswahlliste",
+        IPV4: "IPv4-Adresse",
+        IPV6: "IPv6-Adresse",
     }

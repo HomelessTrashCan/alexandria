@@ -1,93 +1,123 @@
 {% extends "base.html" %}
 {% block title %}{{ item.name }} - Alexandria{% endblock %}
 {% block content %}
-  <h1>{{ item.name }}</h1>
-  <p>Typ: {{ item.config_item_type.name }} &middot; Status: {{ "Archiviert" if item.is_archived else "Aktiv" }}</p>
 
-  <p class="actions">
-    {% if has_permission(current_user.role, "config_item.update") %}
-      <a href="{{ url_for('ci.edit_item', item_id=item.id) }}">Bearbeiten</a>
-    {% endif %}
-    {% if has_permission(current_user.role, "config_item.archive") %}
-      {% if item.is_archived %}
-        <form method="post" action="{{ url_for('ci.unarchive_item', item_id=item.id) }}" class="inline-form">
-          <button type="submit">Reaktivieren</button>
-        </form>
-      {% else %}
-        <form method="post" action="{{ url_for('ci.archive_item', item_id=item.id) }}" class="inline-form">
-          <button type="submit">Archivieren</button>
-        </form>
-      {% endif %}
-    {% endif %}
-    {% if has_permission(current_user.role, "config_item.delete") %}
-      <form method="post" action="{{ url_for('ci.delete_item', item_id=item.id) }}" class="inline-form"
-            onsubmit="return confirm('Dieses Konfigurationselement endgültig löschen?');">
-        <button type="submit">Löschen</button>
-      </form>
-    {% endif %}
-  </p>
+  <div class="page-card">
+    <div class="page-card-header">
+      <h1>{{ item.name }}</h1>
+      <p>Typ: {{ item.config_item_type.name }} &middot; Status: {{ "Archiviert" if item.is_archived else "Aktiv" }}</p>
 
-  <h2>Attribute</h2>
-  {% if item.field_values %}
-    <table class="table">
-      <tbody>
-        {% for fv in item.field_values %}
-          <tr><th>{{ fv.field_definition.name }}</th><td>{{ fv.value }}</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>Keine Attribute erfasst.</p>
-  {% endif %}
-
-  <h2>Beziehungen</h2>
-  <ul>
-    {% for rel in item.outgoing_relationships %}
-      <li>
-        {{ item.name }} <strong>{{ rel.relationship_type }}</strong>
-        <a href="{{ url_for('ci.detail', item_id=rel.target_id) }}">{{ rel.target.name }}</a>
-        {% if has_permission(current_user.role, "config_item.unlink") %}
-          <form method="post" action="{{ url_for('ci.delete_relationship', item_id=item.id, relationship_id=rel.id) }}" class="inline-form">
-            <button type="submit">Entfernen</button>
+      <p class="actions">
+        {% if has_permission(current_user.role, "config_item.update") %}
+          <a href="{{ url_for('ci.edit_item', item_id=item.id) }}">Bearbeiten</a>
+      
+        {% endif %}
+        {% if has_permission(current_user.role, "config_item.archive") %}
+          {% if item.is_archived %}
+            <form method="post" action="{{ url_for('ci.unarchive_item', item_id=item.id) }}" class="inline-form">
+              <button type="submit">Reaktivieren</button>
+            </form>
+          {% else %}
+            <form method="post" action="{{ url_for('ci.archive_item', item_id=item.id) }}" class="inline-form">
+              <button type="submit">Archivieren</button>
+            </form>
+          {% endif %}
+        {% endif %}
+        {% if has_permission(current_user.role, "config_item.delete") %}
+          <form method="post" action="{{ url_for('ci.delete_item', item_id=item.id) }}" class="inline-form"
+                onsubmit="return confirm('Dieses Konfigurationselement endgültig löschen?');">
+            <button type="submit">Löschen</button>
           </form>
         {% endif %}
-      </li>
-    {% endfor %}
-    {% for rel in item.incoming_relationships %}
-      <li>
-        <a href="{{ url_for('ci.detail', item_id=rel.source_id) }}">{{ rel.source.name }}</a>
-        <strong>{{ rel.relationship_type }}</strong> {{ item.name }}
-      </li>
-    {% else %}
-      {% if not item.outgoing_relationships %}<li>Keine Beziehungen vorhanden.</li>{% endif %}
-    {% endfor %}
-  </ul>
+      </p>
+    </div>
 
-  {% if has_permission(current_user.role, "config_item.link") %}
-    <form method="post" action="{{ url_for('ci.add_relationship', item_id=item.id) }}">
-      {{ relationship_form.hidden_tag() }}
-      {{ relationship_form.relationship_type.label }} {{ relationship_form.relationship_type() }}
-      {{ relationship_form.target_id.label }} {{ relationship_form.target_id() }}
-      {{ relationship_form.submit() }}
-    </form>
-  {% endif %}
+    <div class="card collapsed">
+      <h2>
+        <button type="button" class="card-toggle" aria-expanded="false" aria-controls="card-body-attributes">
+          <span class="card-toggle-icon">▾</span> Attribute
+        </button>
+      </h2>
+      <div class="card-body" id="card-body-attributes">
+        {% if item.field_values %}
+          <table class="table">
+            <tbody>
+              {% for fv in item.field_values %}
+                <tr><th>{{ fv.field_definition.name }}</th><td>{{ fv.value }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p>Keine Attribute erfasst.</p>
+        {% endif %}
+      </div>
+    </div>
 
-  <h2>Änderungshistorie</h2>
-  {% if has_permission(current_user.role, "config_item.history_read") %}
-    <table class="table">
-      <thead><tr><th>Zeitpunkt</th><th>Aktion</th><th>Feld</th><th>Alt</th><th>Neu</th><th>Von</th></tr></thead>
-      <tbody>
-        {% for entry in item.change_log_entries %}
-          <tr>
-            <td>{{ entry.changed_at.strftime("%Y-%m-%d %H:%M") }}</td>
-            <td>{{ ChangeAction.LABELS.get(entry.action, entry.action) }}</td>
-            <td>{{ entry.field_definition.name if entry.field_definition else "-" }}</td>
-            <td>{{ entry.old_value or "-" }}</td>
-            <td>{{ entry.new_value or "-" }}</td>
-            <td>{{ entry.changed_by.username }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% endif %}
+    <div class="card collapsed">
+      <h2>
+        <button type="button" class="card-toggle" aria-expanded="false" aria-controls="card-body-relationships">
+          <span class="card-toggle-icon">▾</span> Beziehungen
+        </button>
+      </h2>
+      <div class="card-body" id="card-body-relationships">
+        <ul>
+          {% for rel in item.outgoing_relationships %}
+            <li>
+              {{ item.name }} <strong>{{ rel.relationship_type }}</strong>
+              <a href="{{ url_for('ci.detail', item_id=rel.target_id) }}">{{ rel.target.name }}</a>
+              {% if has_permission(current_user.role, "config_item.unlink") %}
+                <form method="post" action="{{ url_for('ci.delete_relationship', item_id=item.id, relationship_id=rel.id) }}" class="inline-form">
+                  <button type="submit">Entfernen</button>
+                </form>
+              {% endif %}
+            </li>
+          {% endfor %}
+          {% for rel in item.incoming_relationships %}
+            <li>
+              <a href="{{ url_for('ci.detail', item_id=rel.source_id) }}">{{ rel.source.name }}</a>
+              <strong>{{ rel.relationship_type }}</strong> {{ item.name }}
+            </li>
+          {% else %}
+            {% if not item.outgoing_relationships %}<li>Keine Beziehungen vorhanden.</li>{% endif %}
+          {% endfor %}
+        </ul>
+
+        {% if has_permission(current_user.role, "config_item.link") %}
+          <form method="post" action="{{ url_for('ci.add_relationship', item_id=item.id) }}">
+            {{ relationship_form.hidden_tag() }}
+            {{ relationship_form.relationship_type.label }} {{ relationship_form.relationship_type() }}
+            {{ relationship_form.target_id.label }} {{ relationship_form.target_id() }}
+            {{ relationship_form.submit() }}
+          </form>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if has_permission(current_user.role, "config_item.history_read") %}
+      <div class="card collapsed">
+        <h2>
+          <button type="button" class="card-toggle" aria-expanded="false" aria-controls="card-body-history">
+            <span class="card-toggle-icon">▾</span> Änderungshistorie
+          </button>
+        </h2>
+        <div class="card-body" id="card-body-history">
+          <table class="table">
+            <thead><tr><th>Zeitpunkt</th><th>Aktion</th><th>Feld</th><th>Alt</th><th>Neu</th><th>Von</th></tr></thead>
+            <tbody>
+              {% for entry in item.change_log_entries %}
+                <tr>
+                  <td>{{ entry.changed_at.strftime("%Y-%m-%d %H:%M") }}</td>
+                  <td>{{ ChangeAction.LABELS.get(entry.action, entry.action) }}</td>
+                  <td>{{ entry.field_definition.name if entry.field_definition else "-" }}</td>
+                  <td>{{ entry.old_value or "-" }}</td>
+                  <td>{{ entry.new_value or "-" }}</td>
+                  <td>{{ entry.changed_by.username }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endif %}
+  </div>
 {% endblock %}

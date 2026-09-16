@@ -1,4 +1,4 @@
-from flask import flash, redirect, render_template, url_for
+from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
 from backend.app.blueprints.auth import auth_bp
@@ -48,8 +48,17 @@ def register():
     return render_template("auth/register.html", form=form)
 
 
-@auth_bp.route("/verify-email/<token>")
+@auth_bp.route("/verify-email/<token>", methods=["GET", "POST"])
 def verify_email(token: str):
+    """GET zeigt nur eine Bestätigungsseite, die eigentliche Verifizierung
+    passiert erst beim POST (Button-Klick).
+
+    Wichtig: ein GET darf laut HTTP keine Zustandsänderung auslösen ("sichere
+    Methode"). Viele E-Mail-Sicherheitsscanner (Microsoft Defender, Proofpoint
+    u. Ä.) rufen jeden Link in eingehenden Mails automatisch per GET auf, um
+    ihn zu prüfen - würde GET hier direkt verifizieren, wäre das Konto schon
+    bestätigt, bevor der Mensch die Mail überhaupt öffnet.
+    """
     email = confirm_token(token, salt=EMAIL_VERIFY_SALT)
     if email is None:
         flash("Der Bestätigungslink ist ungültig oder abgelaufen.", "danger")
@@ -60,12 +69,18 @@ def verify_email(token: str):
         flash("Zu diesem Bestätigungslink wurde kein Konto gefunden.", "danger")
         return redirect(url_for("auth.login"))
 
-    if not user.email_verified:
-        user.email_verified = True
-        db.session.commit()
+    if request.method == "POST":
+        if not user.email_verified:
+            user.email_verified = True
+            db.session.commit()
+        flash("E-Mailadresse bestätigt. Du kannst dich jetzt anmelden.", "success")
+        return redirect(url_for("auth.login"))
 
-    flash("E-Mailadresse bestätigt. Du kannst dich jetzt anmelden.", "success")
-    return redirect(url_for("auth.login"))
+    if user.email_verified:
+        flash("E-Mailadresse ist bereits bestätigt. Du kannst dich anmelden.", "success")
+        return redirect(url_for("auth.login"))
+
+    return render_template("auth/verify_email.html")
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
@@ -102,7 +117,12 @@ def request_password_reset():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None:
-            token = generate_token(user.email, salt=PASSWORD_RESET_SALT)
+            # Entwertet alle zuvor angeforderten, noch nicht eingelösten
+            # Reset-Links für dieses Konto - nur der zuletzt versendete Link
+            # soll gültig sein, nicht "first come, first served".
+            user.invalidate_password_reset_tokens()
+            db.session.commit()
+            token = generate_token([user.email, user.password_reset_counter], salt=PASSWORD_RESET_SALT)
             reset_url = url_for("auth.reset_password", token=token, _external=True)
             send_email(
                 to=user.email,
@@ -119,14 +139,22 @@ def request_password_reset():
 
 @auth_bp.route("/reset-password/<token>", methods=["GET", "POST"])
 def reset_password(token: str):
-    email = confirm_token(token, salt=PASSWORD_RESET_SALT)
-    if email is None:
+    payload = confirm_token(token, salt=PASSWORD_RESET_SALT)
+    if not isinstance(payload, list) or len(payload) != 2:
         flash("Der Link zum Zurücksetzen ist ungültig oder abgelaufen.", "danger")
         return redirect(url_for("auth.request_password_reset"))
+    email, counter = payload
 
     user = User.query.filter_by(email=email).first()
     if user is None:
         flash("Zu diesem Link wurde kein Konto gefunden.", "danger")
+        return redirect(url_for("auth.request_password_reset"))
+
+    if user.password_reset_counter != counter:
+        # Der Link wurde bereits verwendet (oder das Passwort wurde
+        # zwischenzeitlich anders geändert) - ein einmal benutzter
+        # Reset-Link darf kein zweites Mal funktionieren.
+        flash("Der Link zum Zurücksetzen wurde bereits verwendet oder ist abgelaufen.", "danger")
         return redirect(url_for("auth.request_password_reset"))
 
     form = ResetPasswordForm()

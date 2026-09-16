@@ -363,6 +363,107 @@ input[type="submit"]:hover {
   background: var(--color-surface);
 }
 
+/* Cards */
+
+.card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 2px rgba(32, 26, 41, 0.05);
+}
+
+.card > h1,
+.card > h2,
+.card > h3 {
+  margin: 0 0 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.card > *:last-child {
+  margin-bottom: 0;
+}
+
+/* Page-Card: uebergeordneter Rahmen fuer Detailseiten - der H1-Titel bildet
+   den Kopfbereich und umschliesst die H2-Cards darunter, statt gleichrangig
+   daneben zu stehen. */
+
+.page-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-card-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.page-card-header h1 {
+  margin: 0 0 0.5rem;
+}
+
+.page-card-header .actions {
+  margin: 0.75rem 0 0;
+}
+
+.page-card > .card {
+  margin-bottom: 1.25rem;
+}
+
+.page-card > .card:last-child {
+  margin-bottom: 0;
+}
+
+/* Card-Toggle: klappt den Inhalt unterhalb des Titels ein/aus, der
+   Card-Titel (h2) bleibt dabei immer sichtbar. */
+
+.card-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.card-toggle:hover {
+  background: none;
+  color: var(--color-primary);
+}
+
+.card-toggle-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.card.collapsed .card-toggle-icon {
+  transform: rotate(-90deg);
+}
+
+.card.collapsed .card-body {
+  display: none;
+}
+
+.card.collapsed > h2 {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
 .pagination {
   display: flex;
   align-items: center;

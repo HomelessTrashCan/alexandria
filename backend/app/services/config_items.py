@@ -1,3 +1,4 @@
+import ipaddress
 import json
 from datetime import datetime
 
@@ -60,6 +61,20 @@ def validate_field_values(field_definitions: list[FieldDefinition], form_data) -
             options = json.loads(field.options or "[]")
             if raw not in options:
                 errors[field.id] = "Ungültige Auswahl."
+                continue
+
+        if raw and field.field_type == FieldType.IPV4:
+            try:
+                ipaddress.IPv4Address(raw)
+            except ValueError:
+                errors[field.id] = "Bitte eine gültige IPv4-Adresse eingeben."
+                continue
+
+        if raw and field.field_type == FieldType.IPV6:
+            try:
+                ipaddress.IPv6Address(raw)
+            except ValueError:
+                errors[field.id] = "Bitte eine gültige IPv6-Adresse eingeben."
                 continue
 
         values[field.id] = raw

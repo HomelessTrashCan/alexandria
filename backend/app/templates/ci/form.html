@@ -34,6 +34,10 @@
           <input type="date" id="field_{{ field.id }}" name="field_{{ field.id }}" value="{{ current }}">
         {% elif field.field_type == FieldType.NUMBER %}
           <input type="text" inputmode="decimal" id="field_{{ field.id }}" name="field_{{ field.id }}" value="{{ current }}">
+        {% elif field.field_type == FieldType.IPV4 %}
+          <input type="text" id="field_{{ field.id }}" name="field_{{ field.id }}" value="{{ current }}" placeholder="z. B. 192.168.1.1">
+        {% elif field.field_type == FieldType.IPV6 %}
+          <input type="text" id="field_{{ field.id }}" name="field_{{ field.id }}" value="{{ current }}" placeholder="z. B. 2001:db8::1">
         {% else %}
           <input type="text" id="field_{{ field.id }}" name="field_{{ field.id }}" value="{{ current }}">
         {% endif %}
