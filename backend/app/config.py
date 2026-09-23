@@ -26,4 +26,12 @@ class Config:
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", SECRET_KEY)
     JWT_ACCESS_TOKEN_EXPIRES = 60 * 60 * 8  # 8 Stunden
 
+class TestConfig(Config):
+        """Konfiguration für die pytest-Suite: eigene Datenbank (cmdb_test), CSRF deaktiviert (der Testclient ist kein echter Browser)."""
 
+        TESTING = True
+        WTF_CSRF_ENABLED = False
+        SQLALCHEMY_DATABASE_URI = os.environ.get(
+        "TEST_DATABASE_URL", "mysql+pymysql://cmdb_user:cmdb_password@127.0.0.1:3306/cmdb_test"
+    )
+        MAIL_SERVER = None
