@@ -83,10 +83,16 @@
         </ul>
 
         {% if has_permission(current_user.role, "config_item.link") %}
-          <form method="post" action="{{ url_for('ci.add_relationship', item_id=item.id) }}">
+          <form method="post" action="{{ url_for('ci.add_relationship', item_id=item.id) }}" class="form-row">
             {{ relationship_form.hidden_tag() }}
-            {{ relationship_form.relationship_type.label }} {{ relationship_form.relationship_type() }}
-            {{ relationship_form.target_id.label }} {{ relationship_form.target_id() }}
+            <div class="field">
+              {{ relationship_form.relationship_type.label }}
+              {{ relationship_form.relationship_type() }}
+            </div>
+            <div class="field">
+              {{ relationship_form.target_id.label }}
+              {{ relationship_form.target_id() }}
+            </div>
             {{ relationship_form.submit() }}
           </form>
         {% endif %}

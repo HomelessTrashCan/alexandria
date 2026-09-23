@@ -79,16 +79,11 @@ a:hover {
 .navbar a,
 .navbar span {
   color: #fff;
-}
-
-.navbar-start a,
-.navbar-end a {
-  opacity: 0.85;
+  font-weight: 500;
 }
 
 .navbar-start a:hover,
 .navbar-end a:hover {
-  opacity: 1;
   text-decoration: underline;
 }
 
@@ -471,4 +466,32 @@ input[type="submit"]:hover {
   margin: 1.5rem 0;
   color: var(--color-text-muted);
   font-size: 0.9rem;
+}
+
+/* Kompakte, einzeilige Formulare (z. B. "Beziehung hinzufügen"): Felder samt
+   Label nebeneinander statt dass jedes einzelne die volle Breite beansprucht
+   (das allgemeine select { width: 100% } oben würde sie sonst gegeneinander
+   verdrängen). */
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.form-row .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.form-row label {
+  margin-bottom: 0;
+}
+
+.form-row select {
+  width: auto;
+  min-width: 12rem;
+  max-width: none;
 }
